@@ -1,0 +1,4 @@
+# lattice dns/ip (without `https://` protocol prefix)
+lattice-ip: <LATTICE DNS/IP>
+# lattice-bearer-token
+lattice-bearer-token: <LATTICE BEARER TOKEN>
