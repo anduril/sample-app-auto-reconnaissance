@@ -101,8 +101,7 @@ class SimulatedAsset:
         while True:
             try:
                 agent_listener = anduril_tasks.AgentListener(
-                    agent_selector=anduril_tasks.AgentListenerAgentSelector(anduril_tasks.AgentListenerAgentSelectorOneOf(entity_ids=[self.entity_id]))
-                )
+                    agent_selector=anduril_tasks.EntityIdsSelector(entity_ids=[self.entity_id]))
                 agent_request = await asyncio.to_thread(
                     self.tasks_api_client.long_poll_listen_as_agent,
                     agent_listener=agent_listener
