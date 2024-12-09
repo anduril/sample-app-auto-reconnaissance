@@ -10,7 +10,6 @@ class LRUCache:
             return None
         self.cache.move_to_end(key)
         return self.cache[key]
-    
 
     def get_all(self):
         return list(self.cache.values())

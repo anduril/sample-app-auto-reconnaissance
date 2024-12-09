@@ -8,10 +8,14 @@ The program streams all incoming entities with the Entities API, determines if t
 
 The following endpoints are showcased in this application:
 
-- the `long_poll_entity_events` Entities API endpoint to long poll for incoming entities.
-- the `put_entity_override_rest` Entities API endpoint to override certain entity fields.
-- the `create_task` Tasks API endpoint to create new tasks.
-- the `get_task_by_id` Tasks API endpoint to retrieve tasks.
+- the [`long_poll_entity_events`](https://docs.anduril.com/reference/rest/entitymanager/long-poll-entity-events) Entities API endpoint to long poll for incoming entities.
+- the [`publish_entity_rest`](https://docs.anduril.com/reference/rest/entitymanager/publish-entity-rest) Entities API endpoint to publish entities.
+- the [`put_entity_override_rest`](https://docs.anduril.com/reference/rest/entitymanager/put-entity-override-rest) Entities API endpoint to override certain entity fields.
+- the [`create_task`](https://docs.anduril.com/reference/rest/taskmanager/create-task) Tasks API endpoint to create new tasks.
+- the [`get_task_by_id`](https://docs.anduril.com/reference/rest/taskmanager/get-task-by-id) Tasks API endpoint to retrieve tasks.
+- the [`long_poll_listen_as_agent`](https://docs.anduril.com/reference/rest/taskmanager/long-poll-listen-as-agent) Tasks API endpoint to listen as an agent.
+- the [`update_task_status_by_id`](https://docs.anduril.com/reference/rest/taskmanager/update-task-status-by-id) Tasks API endpoint to update a task's status.
+
 
 ## How to run locally
 
@@ -72,7 +76,7 @@ python simulated_asset/asset.py --config simulated_asset/var/config.yml
 python simulated_track/track.py --config simulated_track/var/config.yml
 ```
 
-If you are able to do so, navigate to your Lattice UI and observe the `Active Tasks` tab. When assets come within range of a non-friendly track, an investigation task will be created. If you observe the simulated asset and track, you will see that the auto reconnaissance system will classify the track disposition as suspicious, and a task will be created for the asset to investigate the track. 
+Navigate to your Lattice UI and observe the `Active Tasks` tab. When assets come within range of a non-friendly track, an investigation task will be created. If you observe the simulated asset and track, you will see that the auto reconnaissance system will classify the track disposition as suspicious, and a task will be created for the asset to investigate the track. 
 
 On the console, you will see the auto reconnaissance system creating a task:
 ```
@@ -87,5 +91,8 @@ INFO:SIMASSET:received execute request, sending execute confirmation
 ```
 
 Afterwards, the auto reconnaissance system will continuously check the status of any tasks being executed.
+
+Here is a screenshot of this in action:
+![img](/static/auto_recon_asset_investigate_track_example.png)
 
 Congrats, you've tasked an asset to investigate a track!

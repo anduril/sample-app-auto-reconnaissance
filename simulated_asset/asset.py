@@ -9,6 +9,7 @@ import yaml
 
 EXPIRY_OFFSET = 15
 REFRESH_INTERVAL = 5
+STATUS_VERSION_COUNTER = 1
 
 
 class SimulatedAsset:
@@ -62,10 +63,16 @@ class SimulatedAsset:
             ),
             location=anduril_entities.Location(
                 position=anduril_entities.Position(
-                    latitude_degrees=self.location["latitude"],
-                    longitude_degrees=self.location["longitude"]
+                    latitudeDegrees=self.location["latitude"],
+                    longitudeDegrees=self.location["longitude"],
+                    altitudeHaeMeters=55 # arbitrary value so asset is above mean sea level
                 ),
-                speedMps=1
+                speedMps=1,
+                velocityEnu=anduril_entities.ENU(
+                    e=1,
+                    n=1,
+                    u=0
+                )
             ),
             mil_view=anduril_entities.MilView(
                 disposition="DISPOSITION_FRIENDLY",
@@ -83,8 +90,7 @@ class SimulatedAsset:
             task_catalog=anduril_entities.TaskCatalog(
                 task_definitions=[
                     anduril_entities.TaskDefinition(
-                        task_specification_url="type.googleapis.com/anduril.tasks.v2.Investigate",
-                        display_name="Investigate"
+                        task_specification_url="type.googleapis.com/anduril.tasks.v2.Investigate"
                     )
                 ]
             )
@@ -107,15 +113,21 @@ class SimulatedAsset:
                 self.logger.error(f"simulated asset task processing error {error}")
 
     async def process_task_event(self, agent_request: anduril_tasks.AgentRequest):
+        global STATUS_VERSION_COUNTER
+        STATUS_VERSION_COUNTER += 1
         self.logger.info(f"received task request {agent_request}")
         if agent_request.execute_request:
             self.logger.info(f"received execute request, sending execute confirmation")
             try:
                 task_execute_update = anduril_tasks.TaskStatusUpdate(
+                    # For an extenesive list of supported task status values, reference 
+                    # https://docs.anduril.com/reference/models/taskmanager/v1/task#:~:text=of%20last%20update.-,statusTaskStatus,-The%20status%20of
                     new_status=anduril_tasks.TaskStatus(status="STATUS_EXECUTING"),
                     author=anduril_tasks.models.Principal(system=anduril_tasks.models.System(entity_id=self.entity_id)),
-                    status_version=2  # Integration is to track its own status version, since we aren't actively
-                    # updating the status, 1 is the current status version, and 2 is the "next" status version
+                    status_version=STATUS_VERSION_COUNTER  # Integration is to track its own status version. This version number 
+                    # increments to indicate the task's current stage in its status lifecycle. Whenever a task's status updates, 
+                    # the status version increments by one. Any status updates received with a lower status version number than 
+                    # what is known are considered stale and ignored.
                 )
                 await asyncio.to_thread(
                     self.tasks_api_client.update_task_status_by_id,
@@ -128,10 +140,14 @@ class SimulatedAsset:
             self.logger.info(f"received cancel request, sending cancel confirmation")
             try:
                 task_cancel_update = anduril_tasks.TaskStatusUpdate(
+                    # For an extenesive list of supported task status values, reference 
+                    # https://docs.anduril.com/reference/models/taskmanager/v1/task#:~:text=of%20last%20update.-,statusTaskStatus,-The%20status%20of
                     new_status=anduril_tasks.TaskStatus(status="STATUS_DONE_NOT_OK"),
                     author=anduril_tasks.models.Principal(system=anduril_tasks.models.System(entity_id=self.entity_id)),
-                    status_version=2  # Integration is to track its own status version, since we aren't actively
-                    # updating the status, 1 is the current status version, and 2 is the "next" status version
+                    status_version=STATUS_VERSION_COUNTER  # Integration is to track its own status version. This version number 
+                    # increments to indicate the task's current stage in its status lifecycle. Whenever a task's status updates, 
+                    # the status version increments by one. Any status updates received with a lower status version number than 
+                    # what is known are considered stale and ignored.
                 )
                 await asyncio.to_thread(
                     self.tasks_api_client.update_task_status_by_id,
