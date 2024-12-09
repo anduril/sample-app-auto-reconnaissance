@@ -28,7 +28,6 @@ class Arbiter:
             self.logger.info("KeyboardInterrupt caught: cancelling tasks...")
             for task in tasks:
                 task.cancel()
-            await asyncio.gather(*tasks, return_exceptions=True)
         finally:
             self.logger.info("Shutting down Entity Auto Recon System")
 
