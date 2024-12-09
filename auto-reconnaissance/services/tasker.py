@@ -14,7 +14,7 @@ class Tasker:
 
     def investigate(self, asset: anduril_entities.Entity, track: anduril_entities.Entity) -> str:
         try:
-            # we have to convert EM.Entity to TM.Entity to be able to use these instances for task creation
+            # we have to convert anduril_entities.Entity to anduril_tasks.Entity to be able to use these instances for task creation
             tm_asset = anduril_tasks.Entity(**asset.to_dict())
             tm_track = anduril_tasks.Entity(**track.to_dict())
 

@@ -10,8 +10,8 @@ class DistanceCalculator:
         One thing to note is that this calculation does not take into account the altitude of the entities.
 
         Args:
-            asset (EM.Entity): The asset entity, which contains the latitude and longitude of the first point.
-            track (EM.Entity): The track entity, which contains the latitude and longitude of the second point.
+            asset (anduril_entities.Entity): The asset entity, which contains the latitude and longitude of the first point.
+            track (anduril_entities.Entity): The track entity, which contains the latitude and longitude of the second point.
 
         Returns:
             float: The distance between the two points in meters.
