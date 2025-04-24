@@ -24,7 +24,7 @@ The following endpoints are showcased in this application:
 
 #### Before you begin
 
-Ensure you have [set up your development environment](https://docs.anduril.com/category/getting-started)
+Ensure you have [set up your development environment](https://docs.anduril.com/guide/get-started)
 
 #### Clone the repository
 
