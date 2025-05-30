@@ -4,7 +4,16 @@ import time
 import uuid
 from datetime import datetime, timezone, timedelta
 
-import entities_api as anduril_entities
+from modules.client import anduril as LatticeClient
+from modules.types import (
+    Aliases,
+    Entity,
+    Location,
+    MilView,
+    Ontology,
+    Position,
+    Provenance,
+)
 import yaml
 
 EXPIRY_OFFSET = 15
@@ -35,30 +44,30 @@ def read_config(config_path):
     return cfg
 
 
-def generate_track_entity(entity_id: str, latitude: float, longitude: float) -> anduril_entities.Entity:
-    return anduril_entities.Entity(
+def generate_track_entity(entity_id: str, latitude: float, longitude: float) -> Entity:
+    return Entity(
         entity_id=entity_id,
         is_live=True,
         expiry_time=datetime.now(timezone.utc) + timedelta(seconds=EXPIRY_OFFSET),
-        aliases=anduril_entities.Aliases(
+        aliases=Aliases(
             name="Simulated Track",
         ),
-        location=anduril_entities.Location(
-            position=anduril_entities.Position(
+        location=Location(
+            position=Position(
                 latitude_degrees=latitude,
                 longitude_degrees=longitude
             )
         ),
-        mil_view=anduril_entities.MilView(
+        mil_view=MilView(
             disposition="DISPOSITION_UNKNOWN",
             environment="ENVIRONMENT_SURFACE",
         ),
-        provenance=anduril_entities.Provenance(
+        provenance=Provenance(
             data_type="Simulated Track",
             integration_name="auto-reconnaissance-sample-app",
             source_update_time=datetime.now(timezone.utc),
         ),
-        ontology=anduril_entities.Ontology(
+        ontology=Ontology(
             template="TEMPLATE_TRACK",
         )
     )
@@ -77,19 +86,44 @@ def start_track_publishing():
     longitude = cfg['track-longitude']
     sandboxes_token = cfg['sandboxes-token']
 
-    entities_configuration = anduril_entities.Configuration(host=f"https://{cfg['lattice-ip']}/api/v1")
-    entities_api_client = anduril_entities.ApiClient(configuration=entities_configuration,
-                                                     header_name="Authorization",
-                                                     header_value=f"Bearer {cfg['lattice-bearer-token']}")
-    if sandboxes_token != "<SANDBOXES_TOKEN>":
-            entities_api_client.default_headers["Anduril-Sandbox-Authorization"] = f"Bearer {sandboxes_token}"
-    entities_api = anduril_entities.EntityApi(api_client=entities_api_client)
+    lattice_client = LatticeClient(
+        base_url=f"https://{cfg['lattice-ip']}/api/v1", 
+        token=cfg['lattice-bearer-token'],
+        sandboxes_token=cfg['sandboxes-token']
+    )
 
     entity_id = str(uuid.uuid4())
 
     while True:
         try:
-            entities_api.publish_entity_rest(entity=generate_track_entity(entity_id, latitude, longitude))
+            # entity = generate_track_entity(entity_id, latitude, longitude)
+            # lattice_client.entity.publish_entity_rest(**entity.model_dump())
+            lattice_client.entity.publish_entity_rest(
+                entity_id=entity_id,
+                is_live=True,
+                expiry_time=datetime.now(timezone.utc) + timedelta(seconds=EXPIRY_OFFSET),
+                aliases=Aliases(
+                    name="Simulated Track",
+                ),
+                location=Location(
+                    position=Position(
+                        latitude_degrees=latitude,
+                        longitude_degrees=longitude
+                    )
+                ),
+                mil_view=MilView(
+                    disposition="DISPOSITION_UNKNOWN",
+                    environment="ENVIRONMENT_SURFACE",
+                ),
+                provenance=Provenance(
+                    data_type="Simulated Track",
+                    integration_name="auto-reconnaissance-sample-app",
+                    source_update_time=datetime.now(timezone.utc),
+                ),
+                ontology=Ontology(
+                    template="TEMPLATE_TRACK",
+                )
+            )
         except Exception as error:
             logger.error(f"error publishing simulated track {error}")
         time.sleep(REFRESH_INTERVAL)
