@@ -1,4 +1,5 @@
-import entities_api as anduril_entities
+from modules.types import Entity
+
 from utils.lru_cache import LRUCache
 
 
@@ -9,19 +10,19 @@ class CacheManager:
         self.asset_task = LRUCache(capacity)
         self.track_task = LRUCache(capacity)
 
-    def add_asset(self, entity: anduril_entities.Entity):
+    def add_asset(self, entity: Entity):
         entity_id = entity.entity_id
         self.assets.put(entity_id, entity)
 
-    def add_track(self, entity: anduril_entities.Entity):
+    def add_track(self, entity: Entity):
         entity_id = entity.entity_id
         self.tracks.put(entity_id, entity)
 
-    def add_asset_task(self, entity: anduril_entities.Entity, task_id: str):
+    def add_asset_task(self, entity: Entity, task_id: str):
         entity_id = entity.entity_id
         self.asset_task.put(entity_id, task_id)
 
-    def add_track_task(self, entity: anduril_entities.Entity, task_id: str):
+    def add_track_task(self, entity: Entity, task_id: str):
         entity_id = entity.entity_id
         self.track_task.put(entity_id, task_id)
 
@@ -31,10 +32,10 @@ class CacheManager:
     def remove_track_task(self, entity_id: str):
         self.track_task.remove(entity_id)
 
-    def get_assets(self) -> list[anduril_entities.Entity]:
+    def get_assets(self) -> list[Entity]:
         return self.assets.get_all()
 
-    def get_tracks(self) -> list[anduril_entities.Entity]:
+    def get_tracks(self) -> list[Entity]:
         return self.tracks.get_all()
 
     def get_asset_tasks(self, entity_id: str):
@@ -43,7 +44,7 @@ class CacheManager:
     def get_track_tasks(self, entity_id: str):
         return self.track_task.get(entity_id)
 
-    def handle_response(self, entity: anduril_entities.Entity):
+    def handle_response(self, entity: Entity):
         ontology_template = entity.ontology.template
         mil_view_disposition = entity.mil_view.disposition
         if ontology_template == "TEMPLATE_ASSET":

@@ -34,7 +34,7 @@ async def main_async(cfg):
     logger.info("starting entity auto reconnaissance system")
     try:
         # Set up the application with the config
-        arbiter = Arbiter(logger, cfg["lattice-ip"], cfg["lattice-bearer-token"])
+        arbiter = Arbiter(logger=logger, lattice_ip=f"https://{cfg['lattice-ip']}/api/v1", bearer_token=cfg["lattice-bearer-token"], sandboxes_token=cfg["sandboxes-token"])
         await arbiter.start()
     except (KeyboardInterrupt, SystemExit):
         logger.info("shutting down entity auto reconnaissance system")

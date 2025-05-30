@@ -1,52 +1,62 @@
 from logging import Logger
 
-import entities_api as anduril_entities
-import tasks_api as anduril_tasks
-
+from modules.client import anduril as LatticeClient
+from modules.types import (
+    Aliases,
+    Entity,
+    EntityIdsSelector,
+    Enu,
+    GoogleProtobufAny,
+    Location,
+    Ontology,
+    Position,
+    Principal,
+    Provenance,
+    Relations,
+    System,
+    TaskCatalog,
+    TaskDefinition,
+    TaskEntity,
+    TaskStatus,
+    User,
+)
 
 class Tasker:
-    def __init__(self, logger: Logger, lattice_ip: str, bearer_token: str):
+    def __init__(self, logger: Logger, lattice_ip: str, bearer_token: str, sandboxes_token: str = None):
         self.logger = logger
-        self.config = anduril_tasks.Configuration(host=f"https://{lattice_ip}/api/v1")
-        self.api_client = anduril_tasks.ApiClient(configuration=self.config, header_name="Authorization",
-                                                  header_value=f"Bearer {bearer_token}")
-        self.task_api = anduril_tasks.TaskApi(api_client=self.api_client)
+        self.lattice_client = LatticeClient(base_url=lattice_ip, token=bearer_token, sandboxes_token=sandboxes_token)
 
-    def investigate(self, asset: anduril_entities.Entity, track: anduril_entities.Entity) -> str:
+    def investigate(self, asset: Entity, track: Entity) -> str:
         try:
-            # we have to convert anduril_entities.Entity to anduril_tasks.Entity to be able to use these instances for task creation
-            tm_asset = anduril_tasks.Entity(**asset.to_dict())
-            tm_track = anduril_tasks.Entity(**track.to_dict())
-
-            display_name = f"Asset {tm_asset.entity_id} -> Track {tm_track.entity_id}"
-            description = f"Asset {tm_asset.entity_id} tasked to perform ISR on Track {tm_track.entity_id}"
+            display_name = f"Asset {asset.entity_id} -> Track {track.entity_id}"
+            description = f"Asset {asset.entity_id} tasked to perform ISR on Track {track.entity_id}"
             specification_type = "type.googleapis.com/anduril.tasks.v2.Investigate"
             specification_properties = {
                 "objective": {
-                    "entity_id": tm_track.entity_id
+                    "entity_id": track.entity_id
                 },
                 "parameters": {
-                    "speed_m_s": tm_asset.location.speed_mps
+                    "speed_m_s": asset.location.speed_mps
                 }
             }
-            specification = anduril_tasks.GoogleProtobufAny(type=specification_type,
-                                                            additional_properties=specification_properties)
-            author_user = anduril_tasks.User(user_id="user/some_user")
-            author = anduril_tasks.Principal(system=anduril_tasks.System(service_name="auto-reconnaissance"))
-            relations_assignee_system = anduril_tasks.System(entity_id=tm_asset.entity_id)
-            relations_assignee = anduril_tasks.Principal(system=relations_assignee_system)
-            relations = anduril_tasks.Relations(assignee=relations_assignee)
-            task_entity = anduril_tasks.TaskEntity(entity=tm_asset, snapshot=False)
+            #specification = GoogleProtobufAny(type=specification_type, additional_properties=specification_properties)
+            specification = GoogleProtobufAny(type=specification_type)
+            author_user = User(user_id="user/some_user")
+            author = Principal(system=System(service_name="auto-reconnaissance"))
+            relations_assignee_system = System(entity_id=asset.entity_id)
+            relations_assignee = Principal(system=relations_assignee_system)
+            relations = Relations(assignee=relations_assignee)
+            task_entity = TaskEntity(entity=asset, snapshot=False)
 
-            task_creation = anduril_tasks.TaskCreation(display_name=display_name,
-                                                       description=description,
-                                                       specification=specification,
-                                                       author=author,
-                                                       relations=relations,
-                                                       is_executed_elsewhere=False,
-                                                       initial_entities=[task_entity])
-            returned_task = self.task_api.create_task(task_creation=task_creation,
-                                                      _content_type="application/json")
+            returned_task = self.lattice_client.task.create_task(
+                display_name=display_name,
+                description=description,
+                specification=specification,
+                author=author,
+                relations=relations,
+                is_executed_elsewhere=False,
+                initial_entities=[task_entity])
+
             self.logger.info(f"Task created - view Lattice UI, task id is {returned_task.version.task_id}")
             return returned_task.version.task_id
         except Exception as e:
@@ -55,7 +65,7 @@ class Tasker:
 
     def check_executing(self, task_id: str) -> bool:
         try:
-            returned_task = self.task_api.get_task_by_id(task_id=task_id)
+            returned_task = self.lattice_client.task.get_task_by_id(task_id=task_id)
             self.logger.info(f"Current task status for this task_id is {returned_task.status.status}")
             return returned_task.status.status == "STATUS_EXECUTING"
         except Exception as e:
