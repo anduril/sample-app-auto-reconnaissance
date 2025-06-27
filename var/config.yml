@@ -4,6 +4,9 @@ lattice-ip: <LATTICE DNS/IP>
 # lattice-bearer-token
 lattice-bearer-token: <LATTICE BEARER TOKEN>
 
+# sandboxes-token
+sandboxes-token: <SANDBOXES_TOKEN>
+
 # asset latitude and longitude
 asset-latitude: 1
 asset-longitude: 1
