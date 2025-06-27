@@ -162,10 +162,10 @@ def validate_config(cfg):
         raise ValueError("missing lattice-ip")
     if "lattice-bearer-token" not in cfg:
         raise ValueError("missing lattice-bearer-token")
-    if "latitude" not in cfg:
-        raise ValueError("missing latitude")
-    if "longitude" not in cfg:
-        raise ValueError("missing longitude")
+    if "asset-latitude" not in cfg:
+        raise ValueError("missing asset-latitude")
+    if "asset-longitude" not in cfg:
+        raise ValueError("missing asset-longitude")
 
 
 def parse_arguments():
@@ -194,12 +194,16 @@ def main():
     entities_api_client = anduril_entities.ApiClient(configuration=entities_configuration,
                                                      header_name="Authorization",
                                                      header_value=f"Bearer {cfg['lattice-bearer-token']}")
+    if cfg["sandboxes-token"] != "<SANDBOXES_TOKEN>":
+        entities_api_client.default_headers["anduril-sandbox-authorization"] = f"Bearer {cfg['sandboxes-token']}"
     entities_api = anduril_entities.EntityApi(api_client=entities_api_client)
 
     tasks_configuration = anduril_tasks.Configuration(host=f"https://{cfg['lattice-ip']}/api/v1")
     tasks_api_client = anduril_tasks.ApiClient(configuration=tasks_configuration,
                                                header_name="Authorization",
                                                header_value=f"Bearer {cfg['lattice-bearer-token']}")
+    if cfg["sandboxes-token"] != "<SANDBOXES_TOKEN>":
+        tasks_api_client.default_headers["anduril-sandbox-authorization"] = f"Bearer {cfg['sandboxes-token']}"
     tasks_api = anduril_tasks.TaskApi(api_client=tasks_api_client)
 
     asset = SimulatedAsset(
@@ -207,7 +211,7 @@ def main():
         entities_api,
         tasks_api,
         "asset-01",
-        {"latitude": cfg['latitude'], "longitude": cfg['longitude']})
+        {"latitude": cfg['asset-latitude'], "longitude": cfg['asset-longitude']})
 
     try:
         asyncio.run(asset.run())

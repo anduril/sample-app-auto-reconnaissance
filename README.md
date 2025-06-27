@@ -65,15 +65,15 @@ longitude: <YOUR_LONGITUDE>
 Open separate terminals to run the following commands. If you are using a virtual environment, ensure that the virtual environment is activated for all terminals.
 
 ```bash
-python auto-reconnaissance/main.py --config auto-reconnaissance/var/config.yml
+python auto-reconnaissance/main.py --config var/config.yml
 ```
 
 ```bash
-python simulated_asset/asset.py --config simulated_asset/var/config.yml
+python simulated_asset/asset.py --config var/config.yml
 ```
 
 ```bash
-python simulated_track/track.py --config simulated_track/var/config.yml
+python simulated_track/track.py --config var/config.yml
 ```
 
 Navigate to your Lattice UI and observe the `Active Tasks` tab. When assets come within range of a non-friendly track, an investigation task will be created. If you observe the simulated asset and track, you will see that the auto reconnaissance system will classify the track disposition as suspicious, and a task will be created for the asset to investigate the track. 

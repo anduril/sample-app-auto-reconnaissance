@@ -16,10 +16,10 @@ def validate_config(cfg):
         raise ValueError("missing lattice-ip")
     if "lattice-bearer-token" not in cfg:
         raise ValueError("missing lattice-bearer-token")
-    if "latitude" not in cfg:
-        raise ValueError("missing latitude")
-    if "longitude" not in cfg:
-        raise ValueError("missing longitude")
+    if "track-latitude" not in cfg:
+        raise ValueError("missing track-latitude")
+    if "track-longitude" not in cfg:
+        raise ValueError("missing track-longitude")
 
 
 def parse_arguments():
@@ -73,13 +73,16 @@ def start_track_publishing():
     args = parse_arguments()
     cfg = read_config(args.config)
 
-    latitude = cfg['latitude']
-    longitude = cfg['longitude']
+    latitude = cfg['track-latitude']
+    longitude = cfg['track-longitude']
+    sandboxes_token = cfg['sandboxes-token']
 
     entities_configuration = anduril_entities.Configuration(host=f"https://{cfg['lattice-ip']}/api/v1")
     entities_api_client = anduril_entities.ApiClient(configuration=entities_configuration,
                                                      header_name="Authorization",
                                                      header_value=f"Bearer {cfg['lattice-bearer-token']}")
+    if sandboxes_token != "<SANDBOXES_TOKEN>":
+            entities_api_client.default_headers["Anduril-Sandbox-Authorization"] = f"Bearer {sandboxes_token}"
     entities_api = anduril_entities.EntityApi(api_client=entities_api_client)
 
     entity_id = str(uuid.uuid4())

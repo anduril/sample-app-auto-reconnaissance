@@ -1,16 +1,20 @@
 import asyncio
+
 from datetime import datetime, timezone
 from logging import Logger
+from typing import Optional
 
 import entities_api as anduril_entities
 
 
 class EntityHandler:
-    def __init__(self, logger: Logger, lattice_ip: str, bearer_token: str):
+    def __init__(self, logger: Logger, lattice_ip: str, bearer_token: str, sandboxes_token: Optional[str] = None):
         self.logger = logger
         self.config = anduril_entities.Configuration(host=f"https://{lattice_ip}/api/v1")
         self.api_client = anduril_entities.ApiClient(configuration=self.config, header_name="Authorization",
                                                      header_value=f"Bearer {bearer_token}")
+        if sandboxes_token:
+            self.api_client.default_headers["anduril-sandbox-authorization"] = f"Bearer {sandboxes_token}"
         self.entity_api = anduril_entities.EntityApi(api_client=self.api_client)
 
     def filter_entity(self, entity: anduril_entities.Entity) -> bool:

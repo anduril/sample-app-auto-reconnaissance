@@ -3,13 +3,17 @@ from logging import Logger
 import entities_api as anduril_entities
 import tasks_api as anduril_tasks
 
+from typing import Optional
+
 
 class Tasker:
-    def __init__(self, logger: Logger, lattice_ip: str, bearer_token: str):
+    def __init__(self, logger: Logger, lattice_ip: str, bearer_token: str, sandboxes_token: Optional[str] = None):
         self.logger = logger
         self.config = anduril_tasks.Configuration(host=f"https://{lattice_ip}/api/v1")
         self.api_client = anduril_tasks.ApiClient(configuration=self.config, header_name="Authorization",
                                                   header_value=f"Bearer {bearer_token}")
+        if sandboxes_token:
+            self.api_client.default_headers["anduril-sandbox-authorization"] = f"Bearer {sandboxes_token}"
         self.task_api = anduril_tasks.TaskApi(api_client=self.api_client)
 
     def investigate(self, asset: anduril_entities.Entity, track: anduril_entities.Entity) -> str:
