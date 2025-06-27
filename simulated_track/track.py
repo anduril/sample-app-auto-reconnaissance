@@ -16,10 +16,10 @@ def validate_config(cfg):
         raise ValueError("missing lattice-ip")
     if "lattice-bearer-token" not in cfg:
         raise ValueError("missing lattice-bearer-token")
-    if "latitude" not in cfg:
-        raise ValueError("missing latitude")
-    if "longitude" not in cfg:
-        raise ValueError("missing longitude")
+    if "track-latitude" not in cfg:
+        raise ValueError("missing track-latitude")
+    if "track-longitude" not in cfg:
+        raise ValueError("missing track-longitude")
 
 
 def parse_arguments():
@@ -73,8 +73,8 @@ def start_track_publishing():
     args = parse_arguments()
     cfg = read_config(args.config)
 
-    latitude = cfg['latitude']
-    longitude = cfg['longitude']
+    latitude = cfg['track-latitude']
+    longitude = cfg['track-longitude']
 
     entities_configuration = anduril_entities.Configuration(host=f"https://{cfg['lattice-ip']}/api/v1")
     entities_api_client = anduril_entities.ApiClient(configuration=entities_configuration,

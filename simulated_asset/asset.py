@@ -162,10 +162,10 @@ def validate_config(cfg):
         raise ValueError("missing lattice-ip")
     if "lattice-bearer-token" not in cfg:
         raise ValueError("missing lattice-bearer-token")
-    if "latitude" not in cfg:
-        raise ValueError("missing latitude")
-    if "longitude" not in cfg:
-        raise ValueError("missing longitude")
+    if "asset-latitude" not in cfg:
+        raise ValueError("missing asset-latitude")
+    if "asset-longitude" not in cfg:
+        raise ValueError("missing asset-longitude")
 
 
 def parse_arguments():
@@ -207,7 +207,7 @@ def main():
         entities_api,
         tasks_api,
         "asset-01",
-        {"latitude": cfg['latitude'], "longitude": cfg['longitude']})
+        {"latitude": cfg['asset-latitude'], "longitude": cfg['asset-longitude']})
 
     try:
         asyncio.run(asset.run())
