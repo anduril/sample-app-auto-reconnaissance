@@ -1,5 +1,7 @@
 import asyncio
+
 from logging import Logger
+from typing import Optional
 
 from utils.distance_calculator import DistanceCalculator
 
@@ -11,11 +13,11 @@ DISTANCE_THRESHOLD_MILES = 5
 
 
 class Arbiter:
-    def __init__(self, logger: Logger, lattice_ip: str, bearer_token: str):
+    def __init__(self, logger: Logger, lattice_ip: str, bearer_token: str, sandboxes_token: Optional[str] = None):
         self.logger = logger
-        self.entity_handler = EntityHandler(logger, lattice_ip, bearer_token)
+        self.entity_handler = EntityHandler(logger, lattice_ip, bearer_token, sandboxes_token)
         self.cache_manager = CacheManager()
-        self.tasker = Tasker(logger, lattice_ip, bearer_token)
+        self.tasker = Tasker(logger, lattice_ip, bearer_token, sandboxes_token)
 
     async def start(self):
         tasks = [

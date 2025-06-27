@@ -75,11 +75,14 @@ def start_track_publishing():
 
     latitude = cfg['track-latitude']
     longitude = cfg['track-longitude']
+    sandboxes_token = cfg['sandboxes-token']
 
     entities_configuration = anduril_entities.Configuration(host=f"https://{cfg['lattice-ip']}/api/v1")
     entities_api_client = anduril_entities.ApiClient(configuration=entities_configuration,
                                                      header_name="Authorization",
                                                      header_value=f"Bearer {cfg['lattice-bearer-token']}")
+    if sandboxes_token != "<SANDBOXES_TOKEN>":
+            entities_api_client.default_headers["Anduril-Sandbox-Authorization"] = f"Bearer {sandboxes_token}"
     entities_api = anduril_entities.EntityApi(api_client=entities_api_client)
 
     entity_id = str(uuid.uuid4())
