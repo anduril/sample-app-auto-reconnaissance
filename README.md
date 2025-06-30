@@ -48,17 +48,17 @@ Follow the guide [here](https://docs.anduril.com/guide/generate-http-sdks) to ge
 pip install -r requirements.txt
 ```
 
-2. Modify the configuration files for the auto reconnaissance system in `auto-reconnaissance/var/config.yml`, the simulated asset in `simulated_asset/var/config.yml`, and the simulated track in `simulated_track/var/config.yml`.
-* Replace `<YOUR_LATTICE_IP>` and `<YOUR_LATTICE_BEARER_TOKEN>` with your Lattice IP and Lattice Bearer Token
-```
-lattice-ip: <YOUR_LATTICE_IP>
-lattice-bearer-token: <YOUR_LATTICE_BEARER_TOKEN>
-```
-* If you would like to change the latitude and longitude of your simulated asset and track, you can do so in the corresponding config files. The default distance threshold for the auto reconnaissance system is 5 miles. Ensure that the latitude and longitude inputs for your asset and track are within this distance.
-```
-latitude: <YOUR_LATITUDE>
-longitude: <YOUR_LONGITUDE>
-```
+2. Modify the configuration file for the auto reconnaissance system in `var/config.yml`. This is called by all scripts.
+* Replace the following placeholders:
+    * `<YOUR_LATTICE_IP>` - hostname, Lattice URL without `https://` protocol prefix
+    * `<YOUR_LATTICE_BEARER_TOKEN>` - Token for your Lattice environment
+    *  `<SANDBOXES_TOKEN>` if using Lattice sandboxes you'll get this from [Account & Security](https://sandboxes.developer.anduril.com/user-settings) page
+
+* If you would like to change the latitude and longitude of your simulated asset and track, you can do so in the corresponding config files. The **default distance threshold for the auto reconnaissance system is 5 miles**. Ensure that the latitude and longitude inputs for your asset and track are within this distance.
+    ```
+    latitude: <YOUR_LATITUDE>
+    longitude: <YOUR_LONGITUDE>
+    ```
 
 #### Run the program
 
