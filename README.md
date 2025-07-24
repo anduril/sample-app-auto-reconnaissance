@@ -35,7 +35,7 @@ cd sample-app-auto-reconnaissance
 
 ## Install dependencies and configure project
 
-1. Install Python requirements 
+1. Install Python requirements
 ```bash
 pip install -r requirements.txt
 ```
