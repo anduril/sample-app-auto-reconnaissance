@@ -5,17 +5,12 @@ from logging import Logger
 from typing import Optional
 from pydantic import BaseModel, Field
 
-import sys
-import os
-
-sys.path.append(os.path.abspath("../modules"))
+from anduril import Lattice
 from anduril import  (
     Entity, 
     MilView,
-    Override,
     Provenance
 )
-from anduril import Lattice
 
 class EntityHandler:
     def __init__(self, logger: Logger, lattice_endpoint: str, environment_token: str, sandboxes_token: Optional[str] = None):

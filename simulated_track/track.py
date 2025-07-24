@@ -43,36 +43,6 @@ def read_config(config_path):
         validate_config(cfg)
     return cfg
 
-
-def generate_track_entity(entity_id: str, latitude: float, longitude: float) -> Entity:
-    return Entity(
-        entity_id=entity_id,
-        is_live=True,
-        expiry_time=datetime.now(timezone.utc) + timedelta(seconds=EXPIRY_OFFSET),
-        aliases=Aliases(
-            name="Simulated Track",
-        ),
-        location=Location(
-            position=Position(
-                latitude_degrees=latitude,
-                longitude_degrees=longitude
-            )
-        ),
-        mil_view=MilView(
-            disposition="DISPOSITION_UNKNOWN",
-            environment="ENVIRONMENT_SURFACE",
-        ),
-        provenance=Provenance(
-            data_type="Simulated Track",
-            integration_name="auto-reconnaissance-sample-app",
-            source_update_time=datetime.now(timezone.utc),
-        ),
-        ontology=Ontology(
-            template="TEMPLATE_TRACK",
-        )
-    )
-
-
 def start_track_publishing():
     logging.basicConfig()
     logger = logging.getLogger("SIMTRACK")
