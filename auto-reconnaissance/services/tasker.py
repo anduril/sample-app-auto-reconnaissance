@@ -23,7 +23,7 @@ from anduril import (
 )
 
 class Tasker:
-    def __init__(self, logger: Logger, lattice_ip: str, lattice_environment_token: str, sandboxes_token: Optional[str] = None):
+    def __init__(self, logger: Logger, lattice_ip: str, environment_token: str, sandboxes_token: Optional[str] = None):
         self.logger = logger
         self.client = Lattice(
             base_url=f"https://{lattice_ip}",
