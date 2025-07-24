@@ -1,6 +1,5 @@
 PyYAML==6.0.2
 geopy==2.3.0
+pydantic==2.9.2
 
-# TODO REPLACE WITH YOUR OWN PATH TO THE OPENAPI-GENERATOR GENERATED REST SDK DIRECTORIES
-<PATH TO GENERATED OPENAPI REST SDK>/lattice_sdk_py/entities_api
-<PATH TO GENERATED OPENAPI REST SDK>/lattice_sdk_py/tasks_api
+anduril-lattice-sdk==2.0.0
