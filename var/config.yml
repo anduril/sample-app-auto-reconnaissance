@@ -1,16 +1,11 @@
-# lattice dns/ip (without `https://` protocol prefix)
-lattice-ip: <LATTICE DNS/IP>
-
-# lattice-bearer-token
-lattice-bearer-token: <LATTICE BEARER TOKEN>
-
-# sandboxes-token
+lattice-endpoint: <LATTICE_ENDPOINT>
+environment-token: <ENVIRONMENT_TOKEN>
 sandboxes-token: <SANDBOXES_TOKEN>
 
-# asset latitude and longitude
+# Asset latitude and longitude
 asset-latitude: 1
 asset-longitude: 1
 
-# track latitude and longitude
+# Track latitude and longitude
 track-latitude: 1.03
 track-longitude: 1.03

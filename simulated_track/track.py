@@ -4,8 +4,8 @@ import time
 import uuid
 from datetime import datetime, timezone, timedelta
 
-from modules.client import anduril as LatticeClient
-from modules.types import (
+from anduril import Lattice
+from anduril import (
     Aliases,
     Entity,
     Location,
@@ -21,10 +21,10 @@ REFRESH_INTERVAL = 5
 
 
 def validate_config(cfg):
-    if "lattice-ip" not in cfg:
-        raise ValueError("missing lattice-ip")
-    if "lattice-bearer-token" not in cfg:
-        raise ValueError("missing lattice-bearer-token")
+    if "lattice-endpoint" not in cfg:
+        raise ValueError("missing lattice-endpoint")
+    if "environment-token" not in cfg:
+        raise ValueError("missing environment-token")
     if "track-latitude" not in cfg:
         raise ValueError("missing track-latitude")
     if "track-longitude" not in cfg:
@@ -86,19 +86,17 @@ def start_track_publishing():
     longitude = cfg['track-longitude']
     sandboxes_token = cfg['sandboxes-token']
 
-    lattice_client = LatticeClient(
-        base_url=f"https://{cfg['lattice-ip']}/api/v1", 
-        token=cfg['lattice-bearer-token'],
-        sandboxes_token=cfg['sandboxes-token']
+    client = Lattice(
+        base_url=f"https://{cfg['lattice-endpoint']}", 
+        token=cfg['environment-token'],
+        headers={ "anduril-sandbox-authorization": f"Bearer {sandboxes_token}" }
     )
 
     entity_id = str(uuid.uuid4())
 
     while True:
         try:
-            # entity = generate_track_entity(entity_id, latitude, longitude)
-            # lattice_client.entity.publish_entity_rest(**entity.model_dump())
-            lattice_client.entity.publish_entity_rest(
+            client.entities.publish_entity(
                 entity_id=entity_id,
                 is_live=True,
                 expiry_time=datetime.now(timezone.utc) + timedelta(seconds=EXPIRY_OFFSET),

@@ -1,7 +1,8 @@
 from logging import Logger
+from typing import Optional
 
-from modules.client import anduril as LatticeClient
-from modules.types import (
+from anduril import Lattice
+from anduril import (
     Aliases,
     Entity,
     EntityIdsSelector,
@@ -22,15 +23,13 @@ from modules.types import (
 )
 
 class Tasker:
-    def __init__(self, logger: Logger, lattice_ip: str, bearer_token: str, sandboxes_token: Optional[str] = None):
+    def __init__(self, logger: Logger, lattice_ip: str, lattice_environment_token: str, sandboxes_token: Optional[str] = None):
         self.logger = logger
-        self.config = anduril_tasks.Configuration(host=f"https://{lattice_ip}/api/v1")
-        self.api_client = anduril_tasks.ApiClient(configuration=self.config, header_name="Authorization",
-                                                  header_value=f"Bearer {bearer_token}")
-        if sandboxes_token:
-            self.api_client.default_headers["anduril-sandbox-authorization"] = f"Bearer {sandboxes_token}"
-        self.task_api = anduril_tasks.TaskApi(api_client=self.api_client)
-
+        self.client = Lattice(
+            base_url=f"https://{lattice_ip}",
+            token=lattice_environment_token, 
+            headers={ "anduril-sandbox-authorization": f"Bearer {sandboxes_token}" }
+        )
     def investigate(self, asset: Entity, track: Entity) -> str:
         try:
             display_name = f"Asset {asset.entity_id} -> Track {track.entity_id}"
@@ -53,7 +52,7 @@ class Tasker:
             relations = Relations(assignee=relations_assignee)
             task_entity = TaskEntity(entity=asset, snapshot=False)
 
-            returned_task = self.lattice_client.task.create_task(
+            returned_task = self.client.tasks.create_task(
                 display_name=display_name,
                 description=description,
                 specification=specification,
@@ -70,7 +69,7 @@ class Tasker:
 
     def check_executing(self, task_id: str) -> bool:
         try:
-            returned_task = self.lattice_client.task.get_task_by_id(task_id=task_id)
+            returned_task = self.client.tasks.get_task(task_id=task_id)
             self.logger.info(f"Current task status for this task_id is {returned_task.status.status}")
             return returned_task.status.status == "STATUS_EXECUTING"
         except Exception as e:

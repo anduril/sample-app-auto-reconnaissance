@@ -3,38 +3,28 @@ import asyncio
 from datetime import datetime, timezone
 from logging import Logger
 from typing import Optional
+from pydantic import BaseModel, Field
 
 import sys
 import os
 
 sys.path.append(os.path.abspath("../modules"))
-from modules.types import (
+from anduril import  (
     Entity, 
-    EntityEvent,
     MilView,
+    Override,
     Provenance
 )
-from modules.client import anduril as LatticeClient
-
-
-class Config(BaseModel):
-    lattice_ip: str = Field(alias="lattice-ip")
-    lattice_bearer_token: str = Field(alias="lattice-bearer-token")
-    entity_update_rate_seconds: int = Field(alias="entity-update-rate-seconds")
-    vessel_mmsi: list[int] = Field(alias="vessel-mmsi")
-    ais_generate_interval_seconds: int = Field(
-        alias="ais-generate-interval-seconds"
-    )
+from anduril import Lattice
 
 class EntityHandler:
-    def __init__(self, logger: Logger, lattice_ip: str, bearer_token: str, sandboxes_token: Optional[str] = None):
+    def __init__(self, logger: Logger, lattice_endpoint: str, environment_token: str, sandboxes_token: Optional[str] = None):
         self.logger = logger
-        self.config = anduril_entities.Configuration(host=f"https://{lattice_ip}/api/v1")
-        self.api_client = anduril_entities.ApiClient(configuration=self.config, header_name="Authorization",
-                                                     header_value=f"Bearer {bearer_token}")
-        if sandboxes_token:
-            self.api_client.default_headers["anduril-sandbox-authorization"] = f"Bearer {sandboxes_token}"
-        self.entity_api = anduril_entities.EntityApi(api_client=self.api_client)
+        self.client = Lattice(
+            base_url=f"https://{lattice_endpoint}",
+            token=environment_token, 
+            headers={ "anduril-sandbox-authorization": f"Bearer {sandboxes_token}" }
+        )
 
     def filter_entity(self, entity: Entity) -> bool:
         """
@@ -62,7 +52,7 @@ class EntityHandler:
     async def stream_entities(self):
         while True:
             try:
-                response = self.lattice_client.entity.long_poll_entity_events(session_token="")
+                response = self.client.entities.long_poll_entity_events(session_token="")
                 if response.entity_events:
                     for entity_event in response.entity_events:
                         entity = entity_event.entity
@@ -71,7 +61,7 @@ class EntityHandler:
                 await asyncio.sleep(0.1)
             except Exception as error:
                 self.logger.error(f"lattice api stream entities error {error}")
-                await asyncio.sleep(30)
+                await asyncio.sleep(30) 
 
     def override_track_disposition(self, track: Entity):
         try:
@@ -83,8 +73,7 @@ class EntityHandler:
                                                               source_id=track.provenance.source_id,
                                                               source_update_time=datetime.now(timezone.utc),
                                                               source_description=track.provenance.source_description, )
-
-            self.lattice_client.entity.put_entity_override_rest(entity_id=entity_id,
+            self.client.entities.override_entity(entity_id=entity_id,
                                                      field_path="mil_view.disposition",
                                                      entity=override_track_entity,
                                                      provenance=override_provenance)

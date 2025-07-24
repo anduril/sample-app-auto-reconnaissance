@@ -8,10 +8,10 @@ from services.arbiter import Arbiter
 
 
 def validate_config(cfg):
-    if "lattice-ip" not in cfg:
-        raise ValueError("missing lattice-ip")
-    if "lattice-bearer-token" not in cfg:
-        raise ValueError("missing lattice-bearer-token")
+    if "lattice-endpoint" not in cfg:
+        raise ValueError("missing lattice-endpoint")
+    if "environment-token" not in cfg:
+        raise ValueError("missing environment-token")
     if "sandboxes-token" not in cfg or cfg["sandboxes-token"] == "<SANDBOXES_TOKEN>":
         logger.warning("sandboxes-token not set - required for connecting to Lattice Sandboxes")
         cfg["sandboxes-token"] = None
@@ -37,7 +37,7 @@ async def main_async(cfg):
     logger.info("starting entity auto reconnaissance system")
     try:
         # Set up the application with the config
-        arbiter = Arbiter(logger, cfg["lattice-ip"], cfg["lattice-bearer-token"], cfg["sandboxes-token"])
+        arbiter = Arbiter(logger, cfg["lattice-endpoint"], cfg["environment-token"], cfg["sandboxes-token"])
         await arbiter.start()
     except (KeyboardInterrupt, SystemExit):
         logger.info("shutting down entity auto reconnaissance system")

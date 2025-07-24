@@ -3,8 +3,8 @@ import asyncio
 import logging
 from datetime import datetime, timezone, timedelta
 
-from modules.client import anduril as LatticeClient
-from modules.types import (
+from anduril import Lattice
+from anduril import (
     AgentRequest,
     Aliases,
     Entity,
@@ -32,11 +32,11 @@ STATUS_VERSION_COUNTER = 1
 class SimulatedAsset:
     def __init__(self,
                  logger: logging.Logger,
-                 lattice_client: LatticeClient,
+                 client: Lattice,
                  entity_id: str,
                  location: dict):
         self.logger = logger
-        self.lattice_client = lattice_client
+        self.client = client
         self.entity_id = entity_id
         self.location = location
 
@@ -60,7 +60,7 @@ class SimulatedAsset:
         self.logger.info(f"starting publish task for simulated asset {self.entity_id}")
         while True:
             try:
-                self.lattice_client.entity.publish_entity_rest(
+                self.client.entities.publish_entity(
                     **(self.generate_asset_entity().model_dump())
                 )
             except Exception as error:
@@ -116,7 +116,7 @@ class SimulatedAsset:
         while True:
             try:
                 agent_request = await asyncio.to_thread(
-                    self.lattice_client.task.long_poll_listen_as_agent,
+                    self.client.tasks.listen_as_agent,
                     agent_selector=EntityIdsSelector(entity_ids=[self.entity_id])
                 )
                 if agent_request:
@@ -132,7 +132,7 @@ class SimulatedAsset:
             self.logger.info(f"received execute request, sending execute confirmation")
             try:
                 await asyncio.to_thread(
-                    self.lattice_client.task.update_task_status_by_id,
+                    self.client.tasks.update_task_status,
                     # For an extenesive list of supported task status values, reference 
                     # https://docs.anduril.com/reference/models/taskmanager/v1/task#:~:text=of%20last%20update.-,statusTaskStatus,-The%20status%20of
                     new_status=TaskStatus(status="STATUS_EXECUTING"),
@@ -149,7 +149,7 @@ class SimulatedAsset:
             self.logger.info(f"received cancel request, sending cancel confirmation")
             try:
                 await asyncio.to_thread(
-                    self.tasks_api_client.update_task_status_by_id,
+                    self.client.update_task_status,
                     # For an extenesive list of supported task status values, reference 
                     # https://docs.anduril.com/reference/models/taskmanager/v1/task#:~:text=of%20last%20update.-,statusTaskStatus,-The%20status%20of
                     new_status=TaskStatus(status="STATUS_DONE_NOT_OK"),
@@ -165,10 +165,10 @@ class SimulatedAsset:
 
 
 def validate_config(cfg):
-    if "lattice-ip" not in cfg:
-        raise ValueError("missing lattice-ip")
-    if "lattice-bearer-token" not in cfg:
-        raise ValueError("missing lattice-bearer-token")
+    if "lattice-endpoint" not in cfg:
+        raise ValueError("missing lattice-endpoint")
+    if "environment-token" not in cfg:
+        raise ValueError("missing environment-token")
     if "asset-latitude" not in cfg:
         raise ValueError("missing asset-latitude")
     if "asset-longitude" not in cfg:
@@ -197,15 +197,14 @@ def main():
     args = parse_arguments()
     cfg = read_config(args.config)
 
-    lattice_client = LatticeClient(
-        base_url=f"https://{cfg['lattice-ip']}/api/v1", 
-        token=cfg['lattice-bearer-token'], 
-        sandboxes_token=cfg['sandboxes-token'],
-    )
+    client = Lattice(
+        base_url=f"https://{cfg['lattice-endpoint']}", 
+        token=cfg['environment-token'], 
+        headers={ "anduril-sandbox-authorization": f"Bearer {cfg['sandboxes-token']}" })
 
     asset = SimulatedAsset(
         logger,
-        lattice_client,
+        client,
         "asset-01",
         {"latitude": cfg['asset-latitude'], "longitude": cfg['asset-longitude']})
 

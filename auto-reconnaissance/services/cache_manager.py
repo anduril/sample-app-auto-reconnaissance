@@ -1,4 +1,4 @@
-from modules.types import Entity
+from anduril import Entity
 
 from utils.lru_cache import LRUCache
 
