@@ -78,12 +78,12 @@ class SimulatedAsset:
             ),
             location=Location(
                 position=Position(
-                    latitudeDegrees=self.location["latitude"],
-                    longitudeDegrees=self.location["longitude"],
-                    altitudeHaeMeters=55 # arbitrary value so asset is above mean sea level
+                    latitude_degrees=self.location["latitude"],
+                    longitude_degrees=self.location["longitude"],
+                    altitude_hae_meters=55 # arbitrary value so asset is above mean sea level
                 ),
-                speedMps=1,
-                velocityEnu=Enu(
+                speed_mps=1,
+                velocity_enu=Enu(
                     e=1,
                     n=1,
                     u=0
