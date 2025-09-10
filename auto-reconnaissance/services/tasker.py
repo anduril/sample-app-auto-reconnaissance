@@ -27,7 +27,7 @@ class Tasker:
         self.logger = logger
         self.client = Lattice(
             base_url=f"https://{lattice_ip}",
-            token=lattice_environment_token, 
+            token=environment_token, 
             headers={ "anduril-sandbox-authorization": f"Bearer {sandboxes_token}" }
         )
     def investigate(self, asset: Entity, track: Entity) -> str:
