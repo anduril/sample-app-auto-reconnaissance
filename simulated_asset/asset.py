@@ -1,6 +1,8 @@
 import argparse
 import asyncio
 import logging
+import httpx
+
 from datetime import datetime, timezone, timedelta
 
 from anduril import AsyncLattice
@@ -119,7 +121,10 @@ class SimulatedAsset:
                     agent_selector=EntityIdsSelector(entity_ids=[self.entity_id])
                 )
                 if agent_request:
+                    self.logger.info(f"received task request for simulated asset {self.entity_id}")
                     await self.process_task_event(agent_request)
+            except httpx.ReadTimeout:
+                continue # Long polling expects re-initiating the request after 5 minutes. 
             except Exception as error:
                 self.logger.error(f"simulated asset task processing error {error}")
 
@@ -197,7 +202,8 @@ def main():
     client = AsyncLattice(
         base_url=f"https://{cfg['lattice-endpoint']}", 
         token=cfg['environment-token'], 
-        headers={ "anduril-sandbox-authorization": f"Bearer {cfg['sandboxes-token']}" })
+        headers={ "anduril-sandbox-authorization": f"Bearer {cfg['sandboxes-token']}" },
+        timeout=300) # 5 minutes for long polling
 
     asset = SimulatedAsset(
         logger,
