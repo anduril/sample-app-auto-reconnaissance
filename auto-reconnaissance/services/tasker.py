@@ -32,7 +32,6 @@ class Tasker:
         )
     def investigate(self, asset: Entity, track: Entity) -> str:
         try:
-            display_name = f"Asset {asset.entity_id} -> Track {track.entity_id}"
             description = f"Asset {asset.entity_id} tasked to perform ISR on Track {track.entity_id}"
             specification_type = "type.googleapis.com/anduril.tasks.v2.Investigate"
             specification_properties = {
@@ -53,7 +52,6 @@ class Tasker:
             task_entity = TaskEntity(entity=asset, snapshot=False)
 
             returned_task = self.client.tasks.create_task(
-                display_name=display_name,
                 description=description,
                 specification=specification,
                 author=author,
