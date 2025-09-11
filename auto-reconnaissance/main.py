@@ -13,6 +13,7 @@ def validate_config(cfg):
     if "environment-token" not in cfg:
         raise ValueError("missing environment-token")
     if "sandboxes-token" not in cfg or cfg["sandboxes-token"] == "<SANDBOXES_TOKEN>":
+        logger = logging.getLogger("EARS")
         logger.warning("sandboxes-token not set - required for connecting to Lattice Sandboxes")
         cfg["sandboxes-token"] = None
 

@@ -34,13 +34,17 @@ class Arbiter:
             self.logger.info("Shutting down Entity Auto Recon System")
 
     async def consume_entities(self):
-        while True:
+        try:
             async for entity in self.entity_handler.stream_entities():
                 self.cache_manager.handle_response(entity)
+        except asyncio.CancelledError:
+            print("Streaming cancelled...")
+        except Exception as error:
+            print(f"Exception: {error}")
 
     async def recon_job(self):
         while True:
-            self.arbitrate_isr()
+            await self.arbitrate_isr()
             await asyncio.sleep(1)
 
     def within_range(self, asset, track) -> bool:
@@ -65,7 +69,7 @@ class Arbiter:
                 self.cache_manager.remove_track_task(track.entity_id)
         return skip
 
-    def arbitrate_isr(self):
+    async def arbitrate_isr(self):
         assets = self.cache_manager.get_assets()
         tracks = self.cache_manager.get_tracks()
         self.logger.info(f"# of assets being tracked: {len(assets)}, # of tracks being tracked: {len(tracks)}")
@@ -75,7 +79,7 @@ class Arbiter:
                                                                                           "DISPOSITION_ASSUMED_FRIENDLY"]:
                     self.logger.info(f"ASSET WITHIN RANGE OF NON-FRIENDLY TRACK")
                     if track.mil_view.disposition not in ["DISPOSITION_SUSPICIOUS", "DISPOSITION_HOSTILE"]:
-                        self.entity_handler.override_track_disposition(track)
+                        await self.entity_handler.override_track_disposition(track)
                     if self.check_in_progress(asset, track):
                         self.logger.info(f"INVESTIGATION ALREADY IN PROGRESS - SKIPPING")
                         continue
