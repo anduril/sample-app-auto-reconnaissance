@@ -32,24 +32,17 @@ class Tasker:
         )
     def investigate(self, asset: Entity, track: Entity) -> str:
         try:
+            self.logger.info(f"Asset {asset.entity_id} tasked to perform ISR on Track {track.entity_id}")
             description = f"Asset {asset.entity_id} tasked to perform ISR on Track {track.entity_id}"
             specification_type = "type.googleapis.com/anduril.tasks.v2.Investigate"
-            specification_properties = {
-                "objective": {
-                    "entity_id": track.entity_id
-                },
-                "parameters": {
-                    "speed_m_s": asset.location.speed_mps
-                }
-            }
-            #specification = GoogleProtobufAny(type=specification_type, additional_properties=specification_properties)
             specification = GoogleProtobufAny(type=specification_type)
-            author_user = User(user_id="user/some_user")
             author = Principal(system=System(service_name="auto-reconnaissance"))
             relations_assignee_system = System(entity_id=asset.entity_id)
             relations_assignee = Principal(system=relations_assignee_system)
             relations = Relations(assignee=relations_assignee)
-            task_entity = TaskEntity(entity=asset, snapshot=False)
+            task_asset = TaskEntity(entity=asset, snapshot=False)
+            task_track = TaskEntity(entity=track, snapshot=False)
+
 
             returned_task = self.client.tasks.create_task(
                 description=description,
@@ -57,7 +50,7 @@ class Tasker:
                 author=author,
                 relations=relations,
                 is_executed_elsewhere=False,
-                initial_entities=[task_entity])
+                initial_entities=[task_asset, task_track])
 
             self.logger.info(f"Task created - view Lattice UI, task id is {returned_task.version.task_id}")
             return returned_task.version.task_id
