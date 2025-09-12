@@ -35,14 +35,18 @@ class Tasker:
             self.logger.info(f"Asset {asset.entity_id} tasked to perform ISR on Track {track.entity_id}")
             description = f"Asset {asset.entity_id} tasked to perform ISR on Track {track.entity_id}"
             specification_type = "type.googleapis.com/anduril.tasks.v2.Investigate"
-            specification = GoogleProtobufAny(type=specification_type)
+            specification = GoogleProtobufAny(
+                type=specification_type,
+                objective={
+                        "entity_id": track.entity_id
+                }
+            )
             author = Principal(system=System(service_name="auto-reconnaissance"))
             relations_assignee_system = System(entity_id=asset.entity_id)
             relations_assignee = Principal(system=relations_assignee_system)
             relations = Relations(assignee=relations_assignee)
             task_asset = TaskEntity(entity=asset, snapshot=False)
             task_track = TaskEntity(entity=track, snapshot=False)
-
 
             returned_task = self.client.tasks.create_task(
                 description=description,
