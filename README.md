@@ -52,7 +52,7 @@ pip install -r requirements.txt
 * Replace the following placeholders:
     * `<YOUR_LATTICE_IP>` - hostname, Lattice URL without `https://` protocol prefix
     * `<YOUR_LATTICE_BEARER_TOKEN>` - Token for your Lattice environment
-    *  `<SANDBOXES_TOKEN>` if using Lattice sandboxes you'll get this from [Account & Security](https://sandboxes.developer.anduril.com/user-settings) page
+    *  `<SANDBOXES_TOKEN>` if using Lattice sandboxes you'll get this from [Account & Security](https://sandboxes.developer.anduril.com/user-settings) page. For more information on obtaining these tokens, see the [Sandboxes documentation](https://developer.anduril.com/guides/getting-started/sandboxes#get-the-tokens)
 
 * If you would like to change the latitude and longitude of your simulated asset and track, you can do so in the corresponding config files. The **default distance threshold for the auto reconnaissance system is 5 miles**. Ensure that the latitude and longitude inputs for your asset and track are within this distance.
     ```
