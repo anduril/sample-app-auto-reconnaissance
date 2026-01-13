@@ -5,7 +5,7 @@ from logging import Logger
 from typing import Optional
 from pydantic import BaseModel, Field
 
-from anduril import Lattice
+from anduril import AsyncLattice
 from anduril import  (
     Entity, 
     MilView,
@@ -15,7 +15,7 @@ from anduril import  (
 class EntityHandler:
     def __init__(self, logger: Logger, lattice_endpoint: str, environment_token: str, sandboxes_token: Optional[str] = None):
         self.logger = logger
-        self.client = Lattice(
+        self.client = AsyncLattice(
             base_url=f"https://{lattice_endpoint}",
             token=environment_token, 
             headers={ "anduril-sandbox-authorization": f"Bearer {sandboxes_token}" }
@@ -45,20 +45,17 @@ class EntityHandler:
             return False
 
     async def stream_entities(self):
-        while True:
-            try:
-                response = self.client.entities.long_poll_entity_events(session_token="")
-                if response.entity_events:
-                    for entity_event in response.entity_events:
-                        entity = entity_event.entity
-                        if self.filter_entity(entity):
-                            yield entity
-                await asyncio.sleep(0.1)
-            except Exception as error:
-                self.logger.error(f"lattice api stream entities error {error}")
-                await asyncio.sleep(30) 
+        try:
+            event_stream = self.client.entities.stream_entities(pre_existing_only=False)
+            async for event in event_stream:
+                if event.event == "entity":
+                    yield event.entity
+        except asyncio.CancelledError:
+            print("Streaming cancelled...")
+        except Exception as error:
+            print(f"Exception: {error}")
 
-    def override_track_disposition(self, track: Entity):
+    async def override_track_disposition(self, track: Entity):
         try:
             self.logger.info(f"overriding disposition for track {track.entity_id}")
             entity_id = track.entity_id
@@ -68,7 +65,7 @@ class EntityHandler:
                                                               source_id=track.provenance.source_id,
                                                               source_update_time=datetime.now(timezone.utc),
                                                               source_description=track.provenance.source_description, )
-            self.client.entities.override_entity(entity_id=entity_id,
+            await self.client.entities.override_entity(entity_id=entity_id,
                                                      field_path="mil_view.disposition",
                                                      entity=override_track_entity,
                                                      provenance=override_provenance)

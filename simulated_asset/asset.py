@@ -1,9 +1,11 @@
 import argparse
 import asyncio
 import logging
+import httpx
+
 from datetime import datetime, timezone, timedelta
 
-from anduril import Lattice
+from anduril import AsyncLattice
 from anduril import (
     AgentRequest,
     Aliases,
@@ -32,7 +34,7 @@ STATUS_VERSION_COUNTER = 1
 class SimulatedAsset:
     def __init__(self,
                  logger: logging.Logger,
-                 client: Lattice,
+                 client: AsyncLattice,
                  entity_id: str,
                  location: dict):
         self.logger = logger
@@ -60,7 +62,7 @@ class SimulatedAsset:
         self.logger.info(f"starting publish task for simulated asset {self.entity_id}")
         while True:
             try:
-                self.client.entities.publish_entity(
+                await self.client.entities.publish_entity(
                     **(self.generate_asset_entity().model_dump())
                 )
             except Exception as error:
@@ -78,12 +80,12 @@ class SimulatedAsset:
             ),
             location=Location(
                 position=Position(
-                    latitudeDegrees=self.location["latitude"],
-                    longitudeDegrees=self.location["longitude"],
-                    altitudeHaeMeters=55 # arbitrary value so asset is above mean sea level
+                    latitude_degrees=self.location["latitude"],
+                    longitude_degrees=self.location["longitude"],
+                    altitude_hae_meters=55 # arbitrary value so asset is above mean sea level
                 ),
-                speedMps=1,
-                velocityEnu=Enu(
+                speed_mps=1,
+                velocity_enu=Enu(
                     e=1,
                     n=1,
                     u=0
@@ -115,24 +117,25 @@ class SimulatedAsset:
         self.logger.info(f"starting listen task for tasking simulated asset {self.entity_id}")
         while True:
             try:
-                agent_request = await asyncio.to_thread(
-                    self.client.tasks.listen_as_agent,
+                agent_request = await self.client.tasks.listen_as_agent(
                     agent_selector=EntityIdsSelector(entity_ids=[self.entity_id])
                 )
                 if agent_request:
+                    self.logger.info(f"received task request for simulated asset {self.entity_id}")
                     await self.process_task_event(agent_request)
+            except httpx.ReadTimeout:
+                continue # Long polling expects re-initiating the request after 5 minutes. 
             except Exception as error:
                 self.logger.error(f"simulated asset task processing error {error}")
 
     async def process_task_event(self, agent_request: AgentRequest):
         global STATUS_VERSION_COUNTER
         STATUS_VERSION_COUNTER += 1
-        self.logger.info(f"received task request {agent_request}")
+        self.logger.info(f"Received task request: {'Execute' if agent_request.execute_request else 'Cancel'}")
         if agent_request.execute_request:
             self.logger.info(f"received execute request, sending execute confirmation")
             try:
-                await asyncio.to_thread(
-                    self.client.tasks.update_task_status,
+                await self.client.tasks.update_task_status(
                     # For an extenesive list of supported task status values, reference 
                     # https://developer.anduril.com/reference/rest/tasks/update-task-status#request.body.newStatus.status
                     new_status=TaskStatus(status="STATUS_EXECUTING"),
@@ -148,8 +151,7 @@ class SimulatedAsset:
         elif agent_request.cancel_request:
             self.logger.info(f"received cancel request, sending cancel confirmation")
             try:
-                await asyncio.to_thread(
-                    self.client.update_task_status,
+                await self.client.tasks.update_task_status(
                     # For an extenesive list of supported task status values, reference 
                     # https://developer.anduril.com/reference/rest/tasks/update-task-status#request.body.newStatus.status
                     new_status=TaskStatus(status="STATUS_DONE_NOT_OK"),
@@ -197,10 +199,11 @@ def main():
     args = parse_arguments()
     cfg = read_config(args.config)
 
-    client = Lattice(
+    client = AsyncLattice(
         base_url=f"https://{cfg['lattice-endpoint']}", 
         token=cfg['environment-token'], 
-        headers={ "anduril-sandbox-authorization": f"Bearer {cfg['sandboxes-token']}" })
+        headers={ "anduril-sandbox-authorization": f"Bearer {cfg['sandboxes-token']}" },
+        timeout=300) # 5 minutes for long polling
 
     asset = SimulatedAsset(
         logger,
