@@ -1,5 +1,6 @@
 lattice-endpoint: <LATTICE_ENDPOINT>
-environment-token: <ENVIRONMENT_TOKEN>
+lattice-client-id: <LATTICE_CLIENT_ID>
+lattice-client-secret: <LATTICE_CLIENT_SECRET>
 sandboxes-token: <SANDBOXES_TOKEN>
 
 # Asset latitude and longitude
