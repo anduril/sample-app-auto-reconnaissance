@@ -10,8 +10,10 @@ from services.arbiter import Arbiter
 def validate_config(cfg):
     if "lattice-endpoint" not in cfg:
         raise ValueError("missing lattice-endpoint")
-    if "environment-token" not in cfg:
-        raise ValueError("missing environment-token")
+    if "lattice-client-id" not in cfg:
+        raise ValueError("missing lattice-client-id")
+    if "lattice-client-secret" not in cfg:
+        raise ValueError("missing lattice-client-secret")
     if "sandboxes-token" not in cfg or cfg["sandboxes-token"] == "<SANDBOXES_TOKEN>":
         logger = logging.getLogger("EARS")
         logger.warning("sandboxes-token not set - required for connecting to Lattice Sandboxes")
@@ -38,7 +40,7 @@ async def main_async(cfg):
     logger.info("starting entity auto reconnaissance system")
     try:
         # Set up the application with the config
-        arbiter = Arbiter(logger, cfg["lattice-endpoint"], cfg["environment-token"], cfg["sandboxes-token"])
+        arbiter = Arbiter(logger, cfg["lattice-endpoint"], cfg["lattice-client-id"], cfg["lattice-client-secret"], cfg["sandboxes-token"])
         await arbiter.start()
     except (KeyboardInterrupt, SystemExit):
         logger.info("shutting down entity auto reconnaissance system")

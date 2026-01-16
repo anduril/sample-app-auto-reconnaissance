@@ -23,11 +23,12 @@ from anduril import (
 )
 
 class Tasker:
-    def __init__(self, logger: Logger, lattice_ip: str, environment_token: str, sandboxes_token: Optional[str] = None):
+    def __init__(self, logger: Logger, lattice_ip: str, client_id: str, client_secret: str, sandboxes_token: Optional[str] = None):
         self.logger = logger
         self.client = Lattice(
             base_url=f"https://{lattice_ip}",
-            token=environment_token, 
+            client_id=client_id, 
+            client_secret=client_secret, 
             headers={ "anduril-sandbox-authorization": f"Bearer {sandboxes_token}" }
         )
     def investigate(self, asset: Entity, track: Entity) -> str:

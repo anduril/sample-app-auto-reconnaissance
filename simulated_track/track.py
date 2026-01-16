@@ -23,8 +23,10 @@ REFRESH_INTERVAL = 5
 def validate_config(cfg):
     if "lattice-endpoint" not in cfg:
         raise ValueError("missing lattice-endpoint")
-    if "environment-token" not in cfg:
-        raise ValueError("missing environment-token")
+    if "lattice-client-id" not in cfg:
+        raise ValueError("missing lattice-client-id")
+    if "lattice-client-secret" not in cfg:
+        raise ValueError("missing lattice-client-secret")
     if "track-latitude" not in cfg:
         raise ValueError("missing track-latitude")
     if "track-longitude" not in cfg:
@@ -58,7 +60,8 @@ def start_track_publishing():
 
     client = Lattice(
         base_url=f"https://{cfg['lattice-endpoint']}", 
-        token=cfg['environment-token'],
+        client_id=cfg['lattice-client-id'], 
+        client_secret=cfg['lattice-client-secret'], 
         headers={ "anduril-sandbox-authorization": f"Bearer {sandboxes_token}" }
     )
 
