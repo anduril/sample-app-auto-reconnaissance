@@ -2,31 +2,25 @@
 
 ## Description
 
-This is a sample application showcasing how to use Lattice HTTP SDKs to perform Entity Auto Reconnaissance.
+This sample application demonstrates how to use REST APIs in the Lattice SDK to create and manage tasks in a simulated reconnaisance scenario.
 
-The program streams all incoming entities with the Entities API, determines if there is any non-friendly track within a certain distance from an asset. If this requirement is fulfilled, the auto reconnaissance system classifies the track disposition as suspicious and creates an investigation task for the asset to investigate the track. You will create a pair of a simulated asset and a track for a clear demonstration of this process.
+The program streams all incoming entities with the Entities API. If there is any non-friendly track within a certain distance from a friendly asset, the auto reconnaissance system classifies the track disposition as suspicious and creates an investigation task assigned to the asset. You will create a pair of a simulated asset and a track for a clear demonstration of this process.
 
 The following endpoints are showcased in this application:
 
-- the [`long_poll_entity_events`](https://docs.anduril.com/reference/rest/entitymanager/long-poll-entity-events) Entities API endpoint to long poll for incoming entities.
-- the [`publish_entity_rest`](https://docs.anduril.com/reference/rest/entitymanager/publish-entity-rest) Entities API endpoint to publish entities.
-- the [`put_entity_override_rest`](https://docs.anduril.com/reference/rest/entitymanager/put-entity-override-rest) Entities API endpoint to override certain entity fields.
-- the [`create_task`](https://docs.anduril.com/reference/rest/taskmanager/create-task) Tasks API endpoint to create new tasks.
-- the [`get_task_by_id`](https://docs.anduril.com/reference/rest/taskmanager/get-task-by-id) Tasks API endpoint to retrieve tasks.
-- the [`long_poll_listen_as_agent`](https://docs.anduril.com/reference/rest/taskmanager/long-poll-listen-as-agent) Tasks API endpoint to listen as an agent.
-- the [`update_task_status_by_id`](https://docs.anduril.com/reference/rest/taskmanager/update-task-status-by-id) Tasks API endpoint to update a task's status.
+- the [`long_poll_entity_events`](https://developer.anduril.com/reference/rest/entities/long-poll-entity-events) Entities API endpoint to long poll for incoming entities.
+- the [`publish_entity`](https://developer.anduril.com/reference/rest/entities/publish-entity) Entities API endpoint to publish entities.
+- the [`override_entity`](https://developer.anduril.com/reference/rest/entities/override-entity) Entities API endpoint to override certain entity fields.
+- the [`create_task`](https://developer.anduril.com/reference/rest/tasks/create-task) Tasks API endpoint to create new tasks.
+- the [`get_task`](https://developer.anduril.com/reference/rest/tasks/get-task) Tasks API endpoint to retrieve tasks.
+- the [`listen_as_agent`](https://developer.anduril.com/reference/rest/tasks/listen-as-agent) Tasks API endpoint to listen as an agent.
+- the [`update_task_status`](https://developer.anduril.com/reference/rest/tasks/update-task-status) Tasks API endpoint to update a task's status.
 
+## Before you begin
+- Install Python version greater than or equal to 3.9.
+- Complete the [set up](https://developer.anduril.com/guides/getting-started/set-up) instructions in the *Lattice SDK Documentation*.
 
-## How to run locally
-
-#### Prerequisites
-- Python version greater than or equal to 3.9
-
-#### Before you begin
-
-Ensure you have [set up your development environment](https://docs.anduril.com/guide/get-started)
-
-#### Clone the repository
+## Clone the repository
 
 ```bash
 git clone https://github.com/anduril/sample-app-auto-reconnaissance.git sample-app-auto-reconnaissance
@@ -39,26 +33,20 @@ cd sample-app-auto-reconnaissance
 > source .venv/bin/activate
 > ```
 
-#### Install dependencies and configure project
+## Install dependencies and configure project
 
-Follow the guide [here](https://docs.anduril.com/guide/generate-http-sdks) to generate your Python HTTP SDK.
-
-1. Navigate to the `requirements.txt` file and change the path to the SDKs according to where you have outputted the `entities_api` and `tasks_api` packages. After updating these paths, run the following command:
+1. Install Python requirements
 ```bash
 pip install -r requirements.txt
 ```
 
 2. Modify the configuration file for the auto reconnaissance system in `var/config.yml`. This is called by all scripts.
 * Replace the following placeholders:
-    * `<YOUR_LATTICE_IP>` - hostname, Lattice URL without `https://` protocol prefix
-    * `<YOUR_LATTICE_BEARER_TOKEN>` - Token for your Lattice environment
-    *  `<SANDBOXES_TOKEN>` if using Lattice sandboxes you'll get this from [Account & Security](https://sandboxes.developer.anduril.com/user-settings) page. For more information on obtaining these tokens, see the [Sandboxes documentation](https://developer.anduril.com/guides/getting-started/sandboxes#get-the-tokens)
+    * `<LATTICE_ENDPOINT>` - hostname, Lattice URL without `https://` protocol prefix
+    * `<ENVIRONMENT_TOKEN>` - Token for your Lattice environment
+    * `<SANDBOXES_TOKEN>` - if using Lattice Sandboxes, see the [Sandboxes guide](https://developer.anduril.com/guides/getting-started/sandboxes)
 
 * If you would like to change the latitude and longitude of your simulated asset and track, you can do so in the corresponding config files. The **default distance threshold for the auto reconnaissance system is 5 miles**. Ensure that the latitude and longitude inputs for your asset and track are within this distance.
-    ```
-    latitude: <YOUR_LATITUDE>
-    longitude: <YOUR_LONGITUDE>
-    ```
 
 #### Run the program
 
@@ -92,7 +80,6 @@ INFO:SIMASSET:received execute request, sending execute confirmation
 
 Afterwards, the auto reconnaissance system will continuously check the status of any tasks being executed.
 
-Here is a screenshot of this in action:
+Navigate to your Lattice UI and verify that the simulated asset and simulated track are displayed.
 ![img](/static/auto_recon_asset_investigate_track_example.png)
 
-Congrats, you've tasked an asset to investigate a track!
