@@ -12,11 +12,12 @@ from anduril import  (
 )
 
 class EntityHandler:
-    def __init__(self, logger: Logger, lattice_endpoint: str, environment_token: str, sandboxes_token: Optional[str] = None):
+    def __init__(self, logger: Logger, lattice_endpoint: str, client_id: str, client_secret: str, sandboxes_token: Optional[str] = None):
         self.logger = logger
         self.client = Lattice(
             base_url=f"https://{lattice_endpoint}",
-            token=environment_token, 
+            client_id=client_id,
+            client_secret=client_secret,
             headers={ "anduril-sandbox-authorization": f"Bearer {sandboxes_token}" }
         )
 
