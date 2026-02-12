@@ -137,7 +137,6 @@ class SimulatedAsset:
             try:
                 await self.client.tasks.update_task_status(
                     # For an extenesive list of supported task status values, reference 
-                    # https://docs.anduril.com/reference/models/taskmanager/v1/task#:~:text=of%20last%20update.-,statusTaskStatus,-The%20status%20of
                     new_status=TaskStatus(status="STATUS_EXECUTING"),
                     author=Principal(system=System(entity_id=self.entity_id)),
                     status_version=STATUS_VERSION_COUNTER,  # Integration is to track its own status version. This version number 
@@ -152,8 +151,6 @@ class SimulatedAsset:
             self.logger.info(f"received cancel request, sending cancel confirmation")
             try:
                 await self.client.tasks.update_task_status(
-                    # For an extenesive list of supported task status values, reference 
-                    # https://docs.anduril.com/reference/models/taskmanager/v1/task#:~:text=of%20last%20update.-,statusTaskStatus,-The%20status%20of
                     new_status=TaskStatus(status="STATUS_DONE_NOT_OK"),
                     author=Principal(system=System(entity_id=self.entity_id)),
                     status_version=STATUS_VERSION_COUNTER,  # Integration is to track its own status version. This version number 
