@@ -1,4 +1,4 @@
-import asyncio
+import asyncio, json
 
 from datetime import datetime, timezone
 from logging import Logger
@@ -50,7 +50,10 @@ class EntityHandler:
             event_stream = self.client.entities.stream_entities(pre_existing_only=False)
             async for event in event_stream:
                 if event.event == "entity":
-                    yield event.entity
+                    event_data = json.loads(event.data)
+                    entity_data = event_data.get("entity")
+                    typed_entity = Entity.model_validate(entity_data)
+                    yield typed_entity
         except asyncio.CancelledError:
             print("Streaming cancelled...")
         except Exception as error:
