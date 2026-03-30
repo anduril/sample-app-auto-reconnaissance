@@ -49,6 +49,8 @@ class CacheManager:
         mil_view_disposition = entity.mil_view.disposition
         if ontology_template == "TEMPLATE_ASSET":
             self.add_asset(entity)
-        elif (ontology_template == "TEMPLATE_TRACK" and
-              mil_view_disposition != "DISPOSITION_FRIENDLY"):
+        elif (
+            ontology_template == "TEMPLATE_TRACK"
+            and mil_view_disposition != "DISPOSITION_FRIENDLY"
+        ):
             self.add_track(entity)

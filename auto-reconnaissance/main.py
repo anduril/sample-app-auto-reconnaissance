@@ -16,18 +16,22 @@ def validate_config(cfg):
         raise ValueError("missing lattice-client-secret")
     if "sandboxes-token" not in cfg or cfg["sandboxes-token"] == "<SANDBOXES_TOKEN>":
         logger = logging.getLogger("EARS")
-        logger.warning("sandboxes-token not set - required for connecting to Lattice Sandboxes")
+        logger.warning(
+            "sandboxes-token not set - required for connecting to Lattice Sandboxes"
+        )
         cfg["sandboxes-token"] = None
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Entity Recon System')
-    parser.add_argument('--config', type=str, help='Path to the configuration file', required=True)
+    parser = argparse.ArgumentParser(description="Entity Recon System")
+    parser.add_argument(
+        "--config", type=str, help="Path to the configuration file", required=True
+    )
     return parser.parse_args()
 
 
 def read_config(config_path):
-    with open(config_path, 'r') as ymlfile:
+    with open(config_path, "r") as ymlfile:
         cfg = yaml.safe_load(ymlfile)
         validate_config(cfg)
     return cfg
@@ -40,7 +44,13 @@ async def main_async(cfg):
     logger.info("starting entity auto reconnaissance system")
     try:
         # Set up the application with the config
-        arbiter = Arbiter(logger, cfg["lattice-endpoint"], cfg["lattice-client-id"], cfg["lattice-client-secret"], cfg["sandboxes-token"])
+        arbiter = Arbiter(
+            logger,
+            cfg["lattice-endpoint"],
+            cfg["lattice-client-id"],
+            cfg["lattice-client-secret"],
+            cfg["sandboxes-token"],
+        )
         await arbiter.start()
     except (KeyboardInterrupt, SystemExit):
         logger.info("shutting down entity auto reconnaissance system")

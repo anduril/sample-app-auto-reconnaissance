@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint
+        uses: astral-sh/ruff-action@v3
+
+      - name: Check app loads
+        run: |
+          python auto-reconnaissance/main.py --help
+          python simulated_asset/asset.py --help
+          python simulated_track/track.py --help

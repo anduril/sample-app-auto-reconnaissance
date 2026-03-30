@@ -17,7 +17,13 @@ class DistanceCalculator:
         Returns:
             float: The distance between the two points in meters.
         """
-        point1 = (asset.location.position.latitude_degrees, asset.location.position.longitude_degrees)
-        point2 = (track.location.position.latitude_degrees, track.location.position.longitude_degrees)
+        point1 = (
+            asset.location.position.latitude_degrees,
+            asset.location.position.longitude_degrees,
+        )
+        point2 = (
+            track.location.position.latitude_degrees,
+            track.location.position.longitude_degrees,
+        )
         distance = geodesic(point1, point2).miles
         return distance
