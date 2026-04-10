@@ -7,7 +7,6 @@ from datetime import datetime, timezone, timedelta
 from anduril import Lattice
 from anduril import (
     Aliases,
-    Entity,
     Location,
     MilView,
     Ontology,
@@ -34,16 +33,19 @@ def validate_config(cfg):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Simulated Track')
-    parser.add_argument('--config', type=str, help='Path to the configuration file', required=True)
+    parser = argparse.ArgumentParser(description="Simulated Track")
+    parser.add_argument(
+        "--config", type=str, help="Path to the configuration file", required=True
+    )
     return parser.parse_args()
 
 
 def read_config(config_path):
-    with open(config_path, 'r') as config_file:
+    with open(config_path, "r") as config_file:
         cfg = yaml.safe_load(config_file)
         validate_config(cfg)
     return cfg
+
 
 def start_track_publishing():
     logging.basicConfig()
@@ -54,15 +56,15 @@ def start_track_publishing():
     args = parse_arguments()
     cfg = read_config(args.config)
 
-    latitude = cfg['track-latitude']
-    longitude = cfg['track-longitude']
-    sandboxes_token = cfg['sandboxes-token']
+    latitude = cfg["track-latitude"]
+    longitude = cfg["track-longitude"]
+    sandboxes_token = cfg["sandboxes-token"]
 
     client = Lattice(
-        base_url=f"https://{cfg['lattice-endpoint']}", 
-        client_id=cfg['lattice-client-id'], 
-        client_secret=cfg['lattice-client-secret'], 
-        headers={ "anduril-sandbox-authorization": f"Bearer {sandboxes_token}" }
+        base_url=f"https://{cfg['lattice-endpoint']}",
+        client_id=cfg["lattice-client-id"],
+        client_secret=cfg["lattice-client-secret"],
+        headers={"anduril-sandbox-authorization": f"Bearer {sandboxes_token}"},
     )
 
     entity_id = str(uuid.uuid4())
@@ -72,14 +74,14 @@ def start_track_publishing():
             client.entities.publish_entity(
                 entity_id=entity_id,
                 is_live=True,
-                expiry_time=datetime.now(timezone.utc) + timedelta(seconds=EXPIRY_OFFSET),
+                expiry_time=datetime.now(timezone.utc)
+                + timedelta(seconds=EXPIRY_OFFSET),
                 aliases=Aliases(
                     name="Simulated Track",
                 ),
                 location=Location(
                     position=Position(
-                        latitude_degrees=latitude,
-                        longitude_degrees=longitude
+                        latitude_degrees=latitude, longitude_degrees=longitude
                     )
                 ),
                 mil_view=MilView(
@@ -93,7 +95,7 @@ def start_track_publishing():
                 ),
                 ontology=Ontology(
                     template="TEMPLATE_TRACK",
-                )
+                ),
             )
         except Exception as error:
             logger.error(f"error publishing simulated track {error}")

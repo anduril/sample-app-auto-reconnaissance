@@ -32,11 +32,13 @@ STATUS_VERSION_COUNTER = 1
 
 
 class SimulatedAsset:
-    def __init__(self,
-                 logger: logging.Logger,
-                 client: AsyncLattice,
-                 entity_id: str,
-                 location: dict):
+    def __init__(
+        self,
+        logger: logging.Logger,
+        client: AsyncLattice,
+        entity_id: str,
+        location: dict,
+    ):
         self.logger = logger
         self.client = client
         self.entity_id = entity_id
@@ -45,7 +47,7 @@ class SimulatedAsset:
     async def run(self):
         tasks = [
             asyncio.create_task(self.publish_asset()),
-            asyncio.create_task(self.listen_for_tasks())
+            asyncio.create_task(self.listen_for_tasks()),
         ]
         try:
             await asyncio.gather(*tasks, return_exceptions=True)
@@ -82,14 +84,10 @@ class SimulatedAsset:
                 position=Position(
                     latitude_degrees=self.location["latitude"],
                     longitude_degrees=self.location["longitude"],
-                    altitude_hae_meters=55 # arbitrary value so asset is above mean sea level
+                    altitude_hae_meters=55,  # arbitrary value so asset is above mean sea level
                 ),
                 speed_mps=1,
-                velocity_enu=Enu(
-                    e=1,
-                    n=1,
-                    u=0
-                )
+                velocity_enu=Enu(e=1, n=1, u=0),
             ),
             mil_view=MilView(
                 disposition="DISPOSITION_FRIENDLY",
@@ -100,62 +98,65 @@ class SimulatedAsset:
                 integration_name="auto-reconnaissance-sample-app",
                 source_update_time=datetime.now(timezone.utc),
             ),
-            ontology=Ontology(
-                template="TEMPLATE_ASSET",
-                platform_type="USV"
-            ),
+            ontology=Ontology(template="TEMPLATE_ASSET", platform_type="USV"),
             task_catalog=TaskCatalog(
                 task_definitions=[
                     TaskDefinition(
                         task_specification_url="type.googleapis.com/anduril.tasks.v2.Investigate"
                     )
                 ]
-            )
+            ),
         )
 
     async def listen_for_tasks(self):
-        self.logger.info(f"starting listen task for tasking simulated asset {self.entity_id}")
+        self.logger.info(
+            f"starting listen task for tasking simulated asset {self.entity_id}"
+        )
         while True:
             try:
                 agent_request = await self.client.tasks.listen_as_agent(
                     agent_selector=EntityIdsSelector(entity_ids=[self.entity_id])
                 )
                 if agent_request:
-                    self.logger.info(f"received task request for simulated asset {self.entity_id}")
+                    self.logger.info(
+                        f"received task request for simulated asset {self.entity_id}"
+                    )
                     await self.process_task_event(agent_request)
             except httpx.ReadTimeout:
-                continue # Long polling expects re-initiating the request after 5 minutes. 
+                continue  # Long polling expects re-initiating the request after 5 minutes.
             except Exception as error:
                 self.logger.error(f"simulated asset task processing error {error}")
 
     async def process_task_event(self, agent_request: AgentRequest):
         global STATUS_VERSION_COUNTER
         STATUS_VERSION_COUNTER += 1
-        self.logger.info(f"Received task request: {'Execute' if agent_request.execute_request else 'Cancel'}")
+        self.logger.info(
+            f"Received task request: {'Execute' if agent_request.execute_request else 'Cancel'}"
+        )
         if agent_request.execute_request:
-            self.logger.info(f"received execute request, sending execute confirmation")
+            self.logger.info("received execute request, sending execute confirmation")
             try:
                 await self.client.tasks.update_task_status(
-                    # For an extenesive list of supported task status values, reference 
+                    # For an extenesive list of supported task status values, reference
                     new_status=TaskStatus(status="STATUS_EXECUTING"),
                     author=Principal(system=System(entity_id=self.entity_id)),
-                    status_version=STATUS_VERSION_COUNTER,  # Integration is to track its own status version. This version number 
-                    # increments to indicate the task's current stage in its status lifecycle. Whenever a task's status updates, 
-                    # the status version increments by one. Any status updates received with a lower status version number than 
+                    status_version=STATUS_VERSION_COUNTER,  # Integration is to track its own status version. This version number
+                    # increments to indicate the task's current stage in its status lifecycle. Whenever a task's status updates,
+                    # the status version increments by one. Any status updates received with a lower status version number than
                     # what is known are considered stale and ignored.
                     task_id=agent_request.execute_request.task.version.task_id,
                 )
             except Exception as error:
                 self.logger.error(f"simulated asset listening agent error {error}")
         elif agent_request.cancel_request:
-            self.logger.info(f"received cancel request, sending cancel confirmation")
+            self.logger.info("received cancel request, sending cancel confirmation")
             try:
                 await self.client.tasks.update_task_status(
                     new_status=TaskStatus(status="STATUS_DONE_NOT_OK"),
                     author=Principal(system=System(entity_id=self.entity_id)),
-                    status_version=STATUS_VERSION_COUNTER,  # Integration is to track its own status version. This version number 
-                    # increments to indicate the task's current stage in its status lifecycle. Whenever a task's status updates, 
-                    # the status version increments by one. Any status updates received with a lower status version number than 
+                    status_version=STATUS_VERSION_COUNTER,  # Integration is to track its own status version. This version number
+                    # increments to indicate the task's current stage in its status lifecycle. Whenever a task's status updates,
+                    # the status version increments by one. Any status updates received with a lower status version number than
                     # what is known are considered stale and ignored.
                     task_id=agent_request.cancel_request.task_id,
                 )
@@ -177,13 +178,15 @@ def validate_config(cfg):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='Simulated Asset')
-    parser.add_argument('--config', type=str, help='Path to the configuration file', required=True)
+    parser = argparse.ArgumentParser(description="Simulated Asset")
+    parser.add_argument(
+        "--config", type=str, help="Path to the configuration file", required=True
+    )
     return parser.parse_args()
 
 
 def read_config(config_path):
-    with open(config_path, 'r') as ymlfile:
+    with open(config_path, "r") as ymlfile:
         cfg = yaml.safe_load(ymlfile)
         validate_config(cfg)
     return cfg
@@ -199,17 +202,19 @@ def main():
     cfg = read_config(args.config)
 
     client = AsyncLattice(
-        base_url=f"https://{cfg['lattice-endpoint']}", 
-        client_id=cfg['lattice-client-id'], 
-        client_secret=cfg['lattice-client-secret'], 
-        headers={ "anduril-sandbox-authorization": f"Bearer {cfg['sandboxes-token']}" },
-        timeout=300) # 5 minutes for long polling
+        base_url=f"https://{cfg['lattice-endpoint']}",
+        client_id=cfg["lattice-client-id"],
+        client_secret=cfg["lattice-client-secret"],
+        headers={"anduril-sandbox-authorization": f"Bearer {cfg['sandboxes-token']}"},
+        timeout=300,
+    )  # 5 minutes for long polling
 
     asset = SimulatedAsset(
         logger,
         client,
         "asset-01",
-        {"latitude": cfg['asset-latitude'], "longitude": cfg['asset-longitude']})
+        {"latitude": cfg["asset-latitude"], "longitude": cfg["asset-longitude"]},
+    )
 
     try:
         asyncio.run(asset.run())
