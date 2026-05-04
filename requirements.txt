@@ -2,4 +2,4 @@ PyYAML==6.0.3
 geopy==2.4.1
 pydantic==2.12.5
 
-anduril-lattice-sdk==4.8.0
+anduril-lattice-sdk==4.8.1
