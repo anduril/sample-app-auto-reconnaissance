@@ -50,6 +50,7 @@ async def main_async(cfg):
             cfg["lattice-client-id"],
             cfg["lattice-client-secret"],
             cfg["sandboxes-token"],
+            entity_stale_seconds=cfg.get("entity-stale-seconds"),
         )
         await arbiter.start()
     except (KeyboardInterrupt, SystemExit):

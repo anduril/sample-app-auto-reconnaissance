@@ -1,0 +1,49 @@
+# Relay loss exercise scenario (fixture)
+
+Documented timeline for rehearsing entity stream gaps before a live exercise.
+Use with `entity-stale-seconds: 120` in `var/config.yml`.
+
+```yaml
+name: relay-death-t14
+description: >
+  Relay node lost at T+14h during exercise. Entity publishers on edge/sensor
+  nodes may continue locally but the arbiter's entity stream gaps — Investigate
+  tasks should not fire on stale fusion state.
+
+duration_hours: 72
+
+entities:
+  - id: asset-alpha
+    template: TEMPLATE_ASSET
+    publisher: uav-orin-07
+  - id: track-hostile-1
+    template: TEMPLATE_TRACK
+    disposition: DISPOSITION_HOSTILE
+    publisher: tower-12
+
+mesh:
+  nodes:
+    - id: relay-3
+      role: relay
+    - id: uav-orin-07
+      role: edge
+    - id: tower-12
+      role: sensor
+  timeline:
+    - at_hour: 14
+      event: node_loss
+      node: relay-3
+      detail: relay lost during exercise
+
+preflight:
+  entity_stale_seconds: 120
+  expected_behavior: >
+    After stopping simulated_track (or asset) updates for >120s, arbiter skips
+    new Investigate tasks and logs STALE ENTITY warnings.
+
+local_simulation:
+  steps:
+    - Run arbiter + simulated_asset + simulated_track
+    - Verify Investigate task in Lattice UI
+    - Stop simulated_track to simulate publisher/stream gap
+    - Confirm arbiter withholds further Investigate tasks

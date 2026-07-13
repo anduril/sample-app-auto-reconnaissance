@@ -30,3 +30,6 @@ jobs:
           python auto-reconnaissance/main.py --help
           python simulated_asset/asset.py --help
           python simulated_track/track.py --help
+
+      - name: Stream health unit tests
+        run: python -m unittest discover -s tests -p 'test_*.py'

@@ -7,6 +7,7 @@ from utils.distance_calculator import DistanceCalculator
 
 from services.cache_manager import CacheManager
 from services.entity_handler import EntityHandler
+from services.stream_health import EntityStreamHealth
 from services.tasker import Tasker
 
 DISTANCE_THRESHOLD_MILES = 5
@@ -20,8 +21,11 @@ class Arbiter:
         client_id: str,
         client_secret: str,
         sandboxes_token: Optional[str] = None,
+        entity_stale_seconds: Optional[float] = None,
     ):
         self.logger = logger
+        self.entity_stale_seconds = entity_stale_seconds
+        self.stream_health = EntityStreamHealth()
         self.entity_handler = EntityHandler(
             logger, lattice_endpoint, client_id, client_secret, sandboxes_token
         )
@@ -47,6 +51,7 @@ class Arbiter:
     async def consume_entities(self):
         try:
             async for entity in self.entity_handler.stream_entities():
+                self.stream_health.record(entity.entity_id)
                 self.cache_manager.handle_response(entity)
         except asyncio.CancelledError:
             print("Streaming cancelled...")
@@ -80,6 +85,20 @@ class Arbiter:
                 self.cache_manager.remove_track_task(track.entity_id)
         return skip
 
+    def entities_fresh(self, asset, track) -> bool:
+        if self.entity_stale_seconds is None:
+            return True
+        for entity in (asset, track):
+            gap = self.stream_health.seconds_since(entity.entity_id)
+            if self.stream_health.is_stale(entity.entity_id, self.entity_stale_seconds):
+                self.logger.warning(
+                    "STALE ENTITY — skipping Investigate task "
+                    f"(entity={entity.entity_id}, gap_s={gap if gap is not None else 'never_seen'}, "
+                    f"threshold_s={self.entity_stale_seconds})"
+                )
+                return False
+        return True
+
     async def arbitrate_isr(self):
         assets = self.cache_manager.get_assets()
         tracks = self.cache_manager.get_tracks()
@@ -102,6 +121,8 @@ class Arbiter:
                         await self.entity_handler.override_track_disposition(track)
                     if self.check_in_progress(asset, track):
                         self.logger.info("INVESTIGATION ALREADY IN PROGRESS - SKIPPING")
+                        continue
+                    if not self.entities_fresh(asset, track):
                         continue
                     if (
                         self.cache_manager.get_asset_tasks(asset.entity_id) is None

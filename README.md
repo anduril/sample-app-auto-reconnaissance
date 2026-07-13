@@ -87,3 +87,17 @@ Here is a screenshot of this in action:
 ![img](/static/auto_recon_asset_investigate_track_example.png)
 
 Congrats, you've tasked an asset to investigate a track!
+
+## Exercise degradation and mesh preflight
+
+Before live exercise hours, rehearse what happens when the entity stream gaps (relay loss, edge partition, publisher crash). The arbiter can **withhold `Investigate` tasks** when asset or track entities exceed a freshness threshold.
+
+See [`docs/EXERCISE_DEGRADATION.md`](docs/EXERCISE_DEGRADATION.md) and [`examples/relay-loss/scenario.yml`](examples/relay-loss/scenario.yml).
+
+Quick enable — add to `var/config.yml`:
+
+```yaml
+entity-stale-seconds: 120
+```
+
+Then stop `simulated_track/track.py` after tasks are flowing to simulate mesh degradation; the arbiter logs `STALE ENTITY` and skips new investigations.
