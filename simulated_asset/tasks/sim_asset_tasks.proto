@@ -1,0 +1,37 @@
+syntax = "proto3";
+package anduril.sample_app_auto_reconnaissance.v1;
+
+message LLA {
+    // Latitude in degrees
+    double latitude_degrees = 1; 
+    // Longitude in degrees
+    double longitude_degrees = 2; 
+    // Altitude in Height Above Ellipsoid (WGS84) in Meters
+    double altitude_hae_m = 3; 
+}
+
+message Objective {
+    oneof target {
+        string entity_id = 1; 
+        LLA lla = 2;
+    }
+}
+
+// Enumeration of possible Orbit patterns.
+enum OrbitDirection {
+    ORBIT_CLOCKWISE = 0;
+    ORBIT_COUNTERCLOCKWISE = 1;
+}
+
+// Task instructing the Agent to Orbit the Objective in a pattern as close to a circle as possible 
+// with the Objective as the centerpoint. 
+message Orbit {
+    // Centerpoint of loiter orbit
+    Objective objective = 1;
+    // Radius of Orbit circle in Meters
+    float orbit_radius = 2;
+    // Minimum Altitude difference to maintain from the target to try to maintain
+    float orbit_height = 3; 
+    // Determines the direction of the orbit.
+    OrbitDirection orbit_direction = 4;  
+}

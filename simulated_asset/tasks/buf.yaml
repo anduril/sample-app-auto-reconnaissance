@@ -1,0 +1,4 @@
+version: v2
+modules:
+  - path: .
+    name: schema-registry.developer.anduril.com/anduril/sample-app-auto-reconnaissance
