@@ -22,8 +22,7 @@ GROUND_SPEED_MPS = 60  # Ground speed for both the ingress leg and the circling 
 ORBIT_TICK_SECONDS = 1  # Simulation step; smaller values produce smoother motion.
 ORBIT_RADIUS_TOLERANCE_M = 5  # How close to the target radius counts as "on the circle".
 
-# JSON Schema for the Orbit task payload. `tasks/` lives at the repo root since
-# it is shared between the auto-reconnaissance and simulated_asset programs.
+# JSON Schema for the Orbit task payload.
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _SCHEMA_DIR = _REPO_ROOT / "tasks" / "jsonschema" / "sample-app-auto-reconnaissance_protoschema-jsonschema"
 _ORBIT_SCHEMA_PATH = _SCHEMA_DIR / "anduril.sample_app_auto_reconnaissance.v1.Orbit.jsonschema.bundle.json"

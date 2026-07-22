@@ -12,8 +12,6 @@ This is comprised of three independent programs that work in conjunction;
 The program streams all incoming entities with the Entities API, then determines if there is any non-friendly track within a certain distance from an asset.
 If this requirement is fulfilled, the auto-reconnaissance system classifies the track disposition as suspicious, and creates an `Orbit` task for the asset to loop around the track.
 
-## 
-
 ## How to run locally
 
 #### Prerequisites
@@ -68,6 +66,7 @@ python simulated_asset/asset.py --config var/config.yml
 python simulated_track/track.py --config var/config.yml
 ```
 
+
 You can view a comprehensive description of the Entities and Tasks in this app from the Developer Console (`https://<your_sandbox_url>/developer-console`). 
 ![img](/static/auto-recon-orbit-dev-console.png)
 
@@ -91,4 +90,14 @@ INFO:SIMASSET:received execute request, sending execute confirmation
 
 Afterwards, the auto reconnaissance system will continuously check the status of any tasks being executed.
 
-Congrats, you've tasked an asset to investigate a track!
+## Tasking Breakdown 
+
+The workflow in this app centers around the Orbit task, which defines the information the Asset requires to execute an Orbit action. The main `auto-reconnaissance` program watches the COP and determines if the 
+Asset is in range of a Track. Once that condition is satisfied, it creates an Orbit task and delivers it to the Asset using the Tasking APIs.
+
+
+### Orbit Task Schema 
+
+The Orbit message is defined in `tasks/sim_asset_tasks.proto`, and has been published to the [sample-app-auto-reconnaissance](https://schema-registry.developer.anduril.com/anduril/sample-app-auto-reconnaissance) repo in the Anduril Schema Registry (ASR). See the [ASR docs](https://developer.anduril.com/guides/developer-tools/registry) for more info on how to register schema definitions with Lattice. 
+
+We use the [generated jsonschemas](https://schema-registry.developer.anduril.com/anduril/sample-app-auto-reconnaissance/sdks/main:bufbuild/protoschema-jsonschema) from the ASR to form the Orbit task object in `simulated_asset/tasker.py` and to perform runtime validation when the Asset receives the Task in `simulated_asset/orbit.py`. A snapshot of the generated jsonschemas can be found in `tasks/jsonschema`.
