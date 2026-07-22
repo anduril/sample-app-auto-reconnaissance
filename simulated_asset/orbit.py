@@ -9,15 +9,25 @@ future task handlers.
 """
 
 import asyncio
+import json
 import math
+from pathlib import Path
 
 from geopy import Point
 from geopy.distance import distance as geo_distance, geodesic
+from jsonschema import Draft202012Validator
 
 # Orbit behavior tuning.
 GROUND_SPEED_MPS = 60  # Ground speed for both the ingress leg and the circling leg.
 ORBIT_TICK_SECONDS = 1  # Simulation step; smaller values produce smoother motion.
 ORBIT_RADIUS_TOLERANCE_M = 5  # How close to the target radius counts as "on the circle".
+
+# JSON Schema for the Orbit task payload. `tasks/` lives at the repo root since
+# it is shared between the auto-reconnaissance and simulated_asset programs.
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+_SCHEMA_DIR = _REPO_ROOT / "tasks" / "jsonschema" / "sample-app-auto-reconnaissance_protoschema-jsonschema"
+_ORBIT_SCHEMA_PATH = _SCHEMA_DIR / "anduril.sample_app_auto_reconnaissance.v1.Orbit.jsonschema.bundle.json"
+_ORBIT_VALIDATOR = Draft202012Validator(json.loads(_ORBIT_SCHEMA_PATH.read_text()))
 
 
 # --- Pure geodesic helpers -------------------------------------------------
@@ -102,12 +112,21 @@ class OrbitTask:
 
     @staticmethod
     def parse_spec(specification):
-        """Extract the Orbit fields from a task spec (GoogleProtobufAny).
+        """Validate and extract the Orbit fields from a task spec (GoogleProtobufAny).
 
-        The spec carries the Orbit payload as camelCase extras alongside @type.
+        The spec carries the Orbit payload as camelCase extras alongside @type,
+        which is the dialect the bundled JSON Schema uses. We validate against
+        that schema before extracting so a malformed payload fails here (and is
+        reported as a failed task) rather than partway through the flight.
         """
         spec = specification.model_dump(by_alias=True, exclude_none=True)
         spec.pop("@type", None)
+
+        errors = sorted(_ORBIT_VALIDATOR.iter_errors(spec), key=lambda e: list(e.path))
+        if errors:
+            details = "; ".join(f"{list(e.path)}: {e.message}" for e in errors)
+            raise ValueError(f"invalid Orbit task payload: {details}")
+
         return {
             "orbit_radius": float(spec["orbitRadius"]),
             "orbit_height": float(spec.get("orbitHeight", 0.0)),

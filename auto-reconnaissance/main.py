@@ -43,6 +43,12 @@ async def main_async(cfg):
     logger.setLevel(logging.DEBUG)
     logger.info("starting entity auto reconnaissance system")
     try:
+        # Orbit task parameters used when tasking an asset to investigate a track.
+        orbit_params = {
+            "orbit_radius": cfg["orbit-radius-meters"],
+            "orbit_height": cfg["orbit-height-meters"],
+            "orbit_direction": cfg["orbit-direction"],
+        }
         # Set up the application with the config
         arbiter = Arbiter(
             logger,
@@ -50,6 +56,7 @@ async def main_async(cfg):
             cfg["lattice-client-id"],
             cfg["lattice-client-secret"],
             cfg["sandboxes-token"],
+            orbit_params,
         )
         await arbiter.start()
     except (KeyboardInterrupt, SystemExit):

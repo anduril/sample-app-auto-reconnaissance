@@ -11,9 +11,12 @@ from anduril import AsyncLattice
 from anduril import (
     AgentRequest,
     Aliases,
+    Classification,
+    ClassificationInformation,
     Entity,
     EntityIdsSelector,
     Enu,
+    Health,
     Location,
     MilView,
     Ontology,
@@ -90,6 +93,15 @@ class SimulatedAsset:
             expiry_time=datetime.now(timezone.utc) + timedelta(seconds=EXPIRY_OFFSET),
             aliases=Aliases(
                 name=f"Simulated Asset {self.entity_id}",
+            ),
+            data_classification=Classification(
+                default=ClassificationInformation(
+                    level="CLASSIFICATION_LEVELS_UNCLASSIFIED"
+                )
+            ),
+            health=Health(
+              connection_status="CONNECTION_STATUS_ONLINE",
+              health_status="HEALTH_STATUS_HEALTHY",  
             ),
             location=Location(
                 position=Position(

@@ -20,6 +20,7 @@ class Arbiter:
         client_id: str,
         client_secret: str,
         sandboxes_token: Optional[str] = None,
+        orbit_params: Optional[dict] = None,
     ):
         self.logger = logger
         self.entity_handler = EntityHandler(
@@ -27,7 +28,7 @@ class Arbiter:
         )
         self.cache_manager = CacheManager()
         self.tasker = Tasker(
-            logger, lattice_endpoint, client_id, client_secret, sandboxes_token
+            logger, lattice_endpoint, client_id, client_secret, sandboxes_token, orbit_params
         )
 
     async def start(self):

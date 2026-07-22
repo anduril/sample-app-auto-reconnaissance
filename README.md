@@ -2,17 +2,22 @@
 
 ## Description
 
-This app shows how to use the Lattice REST SDK for Python SDKs perform a simulated auto-reconnaissance task.
+This app demonstrates how to use the Lattice REST SDK for Python SDKs perform a simulated auto-reconnaissance scenario.
+
+This is comprised of three independent programs that work in conjunction; 
+1. `simulated_track`: A program that publishes a representative Track to Lattice. This represents a point of interest picked up by a Sensor of some type
+1. `simulated_asset`: A program that simulates an aerial vehicle that can be tasked to Orbit a point of interest. This demonstrates how Agents can operate with Tasks.
+1. `auto-reconnaissance`: A program that tasks the simulated asset based on the location of the simulated track. This demonstrates how to create Tasks to control Agents in Lattice. 
 
 The program streams all incoming entities with the Entities API, then determines if there is any non-friendly track within a certain distance from an asset.
-If this requirement is fulfilled, the auto-reconnaissance system classifies the track disposition as suspicious, and creates an `Investigation` task for the asset to investigate the track.
+If this requirement is fulfilled, the auto-reconnaissance system classifies the track disposition as suspicious, and creates an `Orbit` task for the asset to loop around the track.
 
-You will create a pair of entities: a simulated asset, and a simulated track for a demonstration of this process.
+## 
 
 ## How to run locally
 
 #### Prerequisites
-- Python version greater than or equal to 3.9
+- Python version greater than or equal to 3.13
 
 #### Before you begin
 
@@ -82,8 +87,5 @@ INFO:SIMASSET:received execute request, sending execute confirmation
 ```
 
 Afterwards, the auto reconnaissance system will continuously check the status of any tasks being executed.
-
-Here is a screenshot of this in action:
-![img](/static/auto_recon_asset_investigate_track_example.png)
 
 Congrats, you've tasked an asset to investigate a track!
