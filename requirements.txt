@@ -1,6 +1,6 @@
 PyYAML==6.0.3
-geopy==2.4.1
+geopy==2.5.0
 pydantic==2.13.4
 jsonschema==4.26.0
 
-anduril-lattice-sdk==4.18.0
+anduril-lattice-sdk==4.21.0
