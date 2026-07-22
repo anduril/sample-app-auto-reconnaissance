@@ -1,0 +1,156 @@
+{
+  "$defs": {
+    "anduril.sample_app_auto_reconnaissance.v1.LLA.jsonschema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(altitude_hae_m)$": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": 0,
+          "description": "Altitude in Height Above Ellipsoid (WGS84) in Meters"
+        },
+        "^(latitude_degrees)$": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": 0,
+          "description": "Latitude in degrees"
+        },
+        "^(longitude_degrees)$": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": 0,
+          "description": "Longitude in degrees"
+        }
+      },
+      "properties": {
+        "altitudeHaeM": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": 0,
+          "description": "Altitude in Height Above Ellipsoid (WGS84) in Meters"
+        },
+        "latitudeDegrees": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": 0,
+          "description": "Latitude in degrees"
+        },
+        "longitudeDegrees": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": 0,
+          "description": "Longitude in degrees"
+        }
+      },
+      "title": "LLA",
+      "type": "object"
+    },
+    "anduril.sample_app_auto_reconnaissance.v1.Objective.jsonschema.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(entity_id)$": {
+          "type": "string"
+        }
+      },
+      "properties": {
+        "entityId": {
+          "type": "string"
+        },
+        "lla": {
+          "$ref": "#/$defs/anduril.sample_app_auto_reconnaissance.v1.LLA.jsonschema.json"
+        }
+      },
+      "title": "Objective",
+      "type": "object"
+    }
+  },
+  "$id": "anduril.sample_app_auto_reconnaissance.v1.Objective.jsonschema.bundle.json",
+  "$ref": "#/$defs/anduril.sample_app_auto_reconnaissance.v1.Objective.jsonschema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

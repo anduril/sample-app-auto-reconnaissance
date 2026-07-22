@@ -1,0 +1,148 @@
+{
+  "$id": "anduril.sample_app_auto_reconnaissance.v1.Orbit.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Task instructing the Agent to Orbit the Objective in a pattern as close to a circle as possible \n with the Objective as the centerpoint.",
+  "patternProperties": {
+    "^(orbitDirection)$": {
+      "anyOf": [
+        {
+          "pattern": "^ORBIT_CLOCKWISE$",
+          "type": "string"
+        },
+        {
+          "enum": [
+            "ORBIT_COUNTERCLOCKWISE"
+          ],
+          "type": "string"
+        },
+        {
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": "integer"
+        }
+      ],
+      "default": 0,
+      "description": "Determines the direction of the orbit.",
+      "title": "Orbit Direction"
+    },
+    "^(orbitHeight)$": {
+      "anyOf": [
+        {
+          "maximum": 3.4028234663852886e+38,
+          "minimum": -3.4028234663852886e+38,
+          "type": "number"
+        },
+        {
+          "enum": [
+            "Infinity",
+            "-Infinity",
+            "NaN"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "default": 0,
+      "description": "Minimum Altitude difference to maintain from the target to try to maintain"
+    },
+    "^(orbitRadius)$": {
+      "anyOf": [
+        {
+          "maximum": 3.4028234663852886e+38,
+          "minimum": -3.4028234663852886e+38,
+          "type": "number"
+        },
+        {
+          "enum": [
+            "Infinity",
+            "-Infinity",
+            "NaN"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "default": 0,
+      "description": "Radius of Orbit circle in Meters"
+    }
+  },
+  "properties": {
+    "objective": {
+      "$ref": "anduril.sample_app_auto_reconnaissance.v1.Objective.schema.json",
+      "description": "Centerpoint of loiter orbit"
+    },
+    "orbit_direction": {
+      "anyOf": [
+        {
+          "pattern": "^ORBIT_CLOCKWISE$",
+          "type": "string"
+        },
+        {
+          "enum": [
+            "ORBIT_COUNTERCLOCKWISE"
+          ],
+          "type": "string"
+        },
+        {
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": "integer"
+        }
+      ],
+      "default": 0,
+      "description": "Determines the direction of the orbit.",
+      "title": "Orbit Direction"
+    },
+    "orbit_height": {
+      "anyOf": [
+        {
+          "maximum": 3.4028234663852886e+38,
+          "minimum": -3.4028234663852886e+38,
+          "type": "number"
+        },
+        {
+          "enum": [
+            "Infinity",
+            "-Infinity",
+            "NaN"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "default": 0,
+      "description": "Minimum Altitude difference to maintain from the target to try to maintain"
+    },
+    "orbit_radius": {
+      "anyOf": [
+        {
+          "maximum": 3.4028234663852886e+38,
+          "minimum": -3.4028234663852886e+38,
+          "type": "number"
+        },
+        {
+          "enum": [
+            "Infinity",
+            "-Infinity",
+            "NaN"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "default": 0,
+      "description": "Radius of Orbit circle in Meters"
+    }
+  },
+  "title": "Orbit",
+  "type": "object"
+}

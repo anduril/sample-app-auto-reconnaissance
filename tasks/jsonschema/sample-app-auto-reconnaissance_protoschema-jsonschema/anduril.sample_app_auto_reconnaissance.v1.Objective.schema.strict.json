@@ -1,0 +1,15 @@
+{
+  "$id": "anduril.sample_app_auto_reconnaissance.v1.Objective.schema.strict.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "entity_id": {
+      "type": "string"
+    },
+    "lla": {
+      "$ref": "anduril.sample_app_auto_reconnaissance.v1.LLA.schema.strict.json"
+    }
+  },
+  "title": "Objective",
+  "type": "object"
+}
