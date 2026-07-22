@@ -5,9 +5,9 @@
 This app demonstrates how to use the Lattice REST SDK for Python SDKs perform a simulated auto-reconnaissance scenario.
 
 This is comprised of three independent programs that work in conjunction; 
-1. `simulated_track`: A program that publishes a representative Track to Lattice. This represents a point of interest picked up by a Sensor of some type
-1. `simulated_asset`: A program that simulates an aerial vehicle that can be tasked to Orbit a point of interest. This demonstrates how Agents can operate with Tasks.
-1. `auto-reconnaissance`: A program that tasks the simulated asset based on the location of the simulated track. This demonstrates how to create Tasks to control Agents in Lattice. 
+1. `simulated_track`: Publishes a representative Track, representing a real-world object that can't be commanded, such as a point-of-interest from a sensor. 
+1. `simulated_asset`: Simulates an aerial vehicle that can be tasked to Orbit a point of interest. This uses the Orbit task, defined in `tasks/sim_asset_tasks.proto`
+1. `auto-reconnaissance`: Tasks the simulated asset based on the location of the simulated track. This demonstrates how to create Tasks to control Agents in Lattice. 
 
 The program streams all incoming entities with the Entities API, then determines if there is any non-friendly track within a certain distance from an asset.
 If this requirement is fulfilled, the auto-reconnaissance system classifies the track disposition as suspicious, and creates an `Orbit` task for the asset to loop around the track.
@@ -50,11 +50,7 @@ pip install -r requirements.txt
     * `<LATTICE_CLIENT_SECRET>` - Your Lattice environment client secret.
     *  `<SANDBOXES_TOKEN>` If you are using Lattice Sandboxes, get this from [Account & Security](https://sandboxes.developer.anduril.com/user-settings) page. For more information on obtaining these tokens, see the [Sandboxes documentation](https://developer.anduril.com/guides/getting-started/sandboxes#get-the-tokens)
 
-* If you would like to change the latitude and longitude of your simulated asset and track, you can do so in the corresponding config files. The **default distance threshold for the auto reconnaissance system is 5 miles**. Ensure that the latitude and longitude inputs for your asset and track are within this distance.
-    ```
-    latitude: <YOUR_LATITUDE>
-    longitude: <YOUR_LONGITUDE>
-    ```
+* You can change the location of your simulated asset and track from the `var/config.yml` file. The **default distance threshold for the auto reconnaissance system is 5 miles**. Ensure that the latitude and longitude inputs for your asset and track are within this distance.
 
 #### Run the program
 
@@ -71,6 +67,13 @@ python simulated_asset/asset.py --config var/config.yml
 ```bash
 python simulated_track/track.py --config var/config.yml
 ```
+
+You can view a comprehensive description of the Entities and Tasks in this app from the Developer Console (`https://<your_sandbox_url>/developer-console`). 
+![img](/static/auto-recon-orbit-dev-console.png)
+
+While the Task is executing, you can also observe the Asset orbiting the Track via the UI (`https://<your_sandbox_url>/c2`).
+![img](/static/auto-recon-orbit-c2-ui.png)
+
 
 Navigate to your Lattice UI and observe the `Active Tasks` tab. When assets come within range of a non-friendly track, an investigation task will be created. If you observe the simulated asset and track, you will see that the auto reconnaissance system will classify the track disposition as suspicious, and a task will be created for the asset to investigate the track. 
 
