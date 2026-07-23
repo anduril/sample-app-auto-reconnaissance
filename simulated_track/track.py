@@ -14,6 +14,7 @@ from anduril import (
     Position,
     Provenance,
 )
+from anduril.core import ApiError
 
 EXPIRY_OFFSET = 15
 REFRESH_INTERVAL = 5
@@ -97,7 +98,7 @@ def start_track_publishing():
                     template="TEMPLATE_TRACK",
                 ),
             )
-        except Exception as error:
+        except ApiError as error:
             logger.error(f"error publishing simulated track {error}")
         time.sleep(REFRESH_INTERVAL)
 

@@ -27,6 +27,7 @@ from anduril import (
     TaskDefinition,
     TaskStatus,
 )
+from anduril.core import ApiError
 from orbit import OrbitTask
 
 EXPIRY_OFFSET = 15
@@ -85,7 +86,7 @@ class SimulatedAsset:
                 await self.client.entities.publish_entity(
                     **(self.generate_asset_entity().model_dump())
                 )
-            except Exception as error:
+            except ApiError as error:
                 self.logger.error(f"lattice api stream entities error {error}")
 
             await asyncio.sleep(REFRESH_INTERVAL)
@@ -154,7 +155,7 @@ class SimulatedAsset:
                     await self.process_task_event(agent_request)
             except httpx.ReadTimeout:
                 continue  # Long polling expects re-initiating the request after 5 minutes.
-            except Exception as error:
+            except ApiError as error:
                 self.logger.error(f"simulated asset task processing error {error}")
 
     async def process_task_event(self, agent_request: AgentRequest):
@@ -197,7 +198,7 @@ class SimulatedAsset:
                     # what is known are considered stale and ignored.
                     task_id=task_id,
                 )
-            except Exception as error:
+            except ApiError as error:
                 self.logger.error(f"simulated asset listening agent error {error}")
                 return
 
@@ -216,7 +217,6 @@ class SimulatedAsset:
             )
 
     async def _report_terminal_status(self, task_id: str, status: str):
-        global STATUS_VERSION_COUNTER
         try:
             await self.client.tasks.update_task_status(
                 new_status=TaskStatus(status=status),
@@ -227,7 +227,7 @@ class SimulatedAsset:
                 # what is known are considered stale and ignored.
                 task_id=task_id,
             )
-        except Exception as error:
+        except ApiError as error:
             self.logger.error(f"simulated asset listening agent error {error}")
 
     def _cancel_active_task(self):

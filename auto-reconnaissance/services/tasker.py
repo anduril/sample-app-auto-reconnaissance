@@ -109,7 +109,7 @@ class Tasker:
             return returned_task.version.task_id
         except Exception as e:
             self.logger.error(f"task creation error {e}")
-            raise e
+            raise
 
     def check_executing(self, task_id: str) -> bool:
         try:
@@ -120,4 +120,4 @@ class Tasker:
             return returned_task.status.status == "STATUS_EXECUTING"
         except Exception as e:
             self.logger.error(f"task creation error {e}")
-            raise e
+            raise

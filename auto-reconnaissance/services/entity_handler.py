@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from logging import Logger
 
 from anduril import AsyncLattice, Entity, MilView, Provenance
+from anduril.core import ApiError
 
 
 class EntityHandler:
@@ -37,13 +38,7 @@ class EntityHandler:
         """
         ontology_template = entity.ontology.template
         mil_view_disposition = entity.mil_view.disposition
-        if ontology_template == "TEMPLATE_ASSET" or (
-            ontology_template == "TEMPLATE_TRACK"
-            and mil_view_disposition != "DISPOSITION_FRIENDLY"
-        ):
-            return True
-        else:
-            return False
+        return bool(ontology_template == "TEMPLATE_ASSET" or ontology_template == "TEMPLATE_TRACK" and mil_view_disposition != "DISPOSITION_FRIENDLY")
 
     async def stream_entities(self):
         try:
@@ -53,7 +48,7 @@ class EntityHandler:
                     yield event.entity
         except asyncio.CancelledError:
             print("Streaming cancelled...")
-        except Exception as error:
+        except ApiError as error:
             print(f"Exception: {error}")
 
     async def override_track_disposition(self, track: Entity):
@@ -78,5 +73,5 @@ class EntityHandler:
                 provenance=override_provenance,
             )
             return
-        except Exception as error:
+        except ApiError as error:
             self.logger.error(f"lattice api stream entities error {error}")

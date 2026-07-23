@@ -86,6 +86,10 @@ def velocity_enu(prev, new, prev_alt, new_alt, dt=ORBIT_TICK_SECONDS):
 # --- Orbit task ------------------------------------------------------------
 
 
+class OrbitExecutionError(Exception):
+    """Raised when an Orbit task cannot be executed (e.g. a malformed spec)."""
+
+
 class OrbitTask:
     """Handler for the Orbit task type.
 
@@ -122,7 +126,7 @@ class OrbitTask:
         except asyncio.CancelledError:
             asset.logger.info("orbit: cancelled")
             raise
-        except Exception as error:
+        except OrbitExecutionError as error:
             asset.logger.error(f"orbit execution error {error}")
             await asset.report_task_failed(task_id)
 
@@ -141,7 +145,7 @@ class OrbitTask:
         errors = sorted(_ORBIT_VALIDATOR.iter_errors(spec), key=lambda e: list(e.path))
         if errors:
             details = "; ".join(f"{list(e.path)}: {e.message}" for e in errors)
-            raise ValueError(f"invalid Orbit task payload: {details}")
+            raise OrbitExecutionError(f"invalid Orbit task payload: {details}")
 
         return {
             "orbit_radius": float(spec["orbitRadius"]),

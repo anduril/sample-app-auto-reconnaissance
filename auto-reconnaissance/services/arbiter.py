@@ -1,6 +1,7 @@
 import asyncio
 from logging import Logger
 
+from anduril.core import ApiError
 from services.cache_manager import CacheManager
 from services.entity_handler import EntityHandler
 from services.tasker import Tasker
@@ -53,7 +54,7 @@ class Arbiter:
                 self.cache_manager.handle_response(entity)
         except asyncio.CancelledError:
             print("Streaming cancelled...")
-        except Exception as error:
+        except ApiError as error:
             print(f"Exception: {error}")
 
     async def recon_job(self):
