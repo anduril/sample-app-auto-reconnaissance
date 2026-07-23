@@ -98,7 +98,7 @@ Asset is in range of a Track. Once that condition is satisfied, it creates an Or
 
 ### Orbit Task Schema 
 
-The `Orbit` message is defined in `tasks/sim_asset_tasks.proto`, and has been published to the [sample-app-auto-reconnaissance](https://schema-registry.developer.anduril.com/anduril/sample-app-auto-reconnaissance) repo in the Anduril Schema Registry (ASR). See the [ASR docs](https://developer.anduril.com/guides/developer-tools/registry) for more info on how to register schema definitions with Lattice. 
+The `Orbit` message is defined in `tasks/sim_asset_tasks.proto`, and has been published to the [sample-app-auto-reconnaissance](https://schema-registry.developer.anduril.com/anduril/sample-app-auto-reconnaissance) repo in the Lattice Schema Registry (LSR). See the [LSR docs](https://developer.anduril.com/guides/developer-tools/registry) for more info on how to register schema definitions with Lattice. 
 
 
-We use the [generated jsonschemas](https://schema-registry.developer.anduril.com/anduril/sample-app-auto-reconnaissance/sdks/main:bufbuild/protoschema-jsonschema) from the ASR to form the Orbit task object in `simulated_asset/tasker.py` and to perform runtime validation when the Asset receives the Task in `simulated_asset/orbit.py`. A snapshot of the generated jsonschemas can be found in `tasks/jsonschema`.
+We use the [generated jsonschemas](https://schema-registry.developer.anduril.com/anduril/sample-app-auto-reconnaissance/sdks/main:bufbuild/protoschema-jsonschema) from the LSR to form the Orbit task object in `simulated_asset/tasker.py` and to perform runtime validation when the Asset receives the Task in `simulated_asset/orbit.py`. A snapshot of the generated jsonschemas can be found in `tasks/jsonschema`.
