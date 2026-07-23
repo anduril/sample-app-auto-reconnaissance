@@ -15,7 +15,9 @@ from anduril import (
 from jsonschema import Draft202012Validator
 
 # Fully-qualified type URL of the Orbit task spec.
-ORBIT_SPECIFICATION_URL = "type.googleapis.com/anduril.sample_app_auto_reconnaissance.v1.Orbit"
+ORBIT_SPECIFICATION_URL = (
+    "type.googleapis.com/anduril.sample_app_auto_reconnaissance.v1.Orbit"
+)
 
 # JSON Schema for the Orbit task payload. `tasks/` lives at the repo root since
 # it is shared between the auto-reconnaissance and simulated_asset programs. The
@@ -68,7 +70,9 @@ class Tasker:
 
         payload = specification.model_dump(by_alias=True, exclude_none=True)
         payload.pop("@type", None)
-        errors = sorted(_ORBIT_VALIDATOR.iter_errors(payload), key=lambda e: list(e.path))
+        errors = sorted(
+            _ORBIT_VALIDATOR.iter_errors(payload), key=lambda e: list(e.path)
+        )
         if errors:
             details = "; ".join(f"{list(e.path)}: {e.message}" for e in errors)
             raise ValueError(f"invalid Orbit task payload: {details}")
@@ -80,7 +84,9 @@ class Tasker:
             self.logger.info(
                 f"Asset {asset.entity_id} tasked to Orbit Track {track.entity_id}"
             )
-            description = f"Asset {asset.entity_id} tasked to Orbit Track {track.entity_id}"
+            description = (
+                f"Asset {asset.entity_id} tasked to Orbit Track {track.entity_id}"
+            )
             specification = self.build_orbit_specification(track)
             author = Principal(system=System(service_name="auto-reconnaissance"))
             relations_assignee_system = System(entity_id=asset.entity_id)

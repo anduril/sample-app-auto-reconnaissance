@@ -20,16 +20,27 @@ from jsonschema import Draft202012Validator
 # Orbit behavior tuning.
 GROUND_SPEED_MPS = 60  # Ground speed for both the ingress leg and the circling leg.
 ORBIT_TICK_SECONDS = 1  # Simulation step; smaller values produce smoother motion.
-ORBIT_RADIUS_TOLERANCE_M = 5  # How close to the target radius counts as "on the circle".
+ORBIT_RADIUS_TOLERANCE_M = (
+    5  # How close to the target radius counts as "on the circle".
+)
 
 # JSON Schema for the Orbit task payload.
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-_SCHEMA_DIR = _REPO_ROOT / "tasks" / "jsonschema" / "sample-app-auto-reconnaissance_protoschema-jsonschema"
-_ORBIT_SCHEMA_PATH = _SCHEMA_DIR / "anduril.sample_app_auto_reconnaissance.v1.Orbit.jsonschema.bundle.json"
+_SCHEMA_DIR = (
+    _REPO_ROOT
+    / "tasks"
+    / "jsonschema"
+    / "sample-app-auto-reconnaissance_protoschema-jsonschema"
+)
+_ORBIT_SCHEMA_PATH = (
+    _SCHEMA_DIR
+    / "anduril.sample_app_auto_reconnaissance.v1.Orbit.jsonschema.bundle.json"
+)
 _ORBIT_VALIDATOR = Draft202012Validator(json.loads(_ORBIT_SCHEMA_PATH.read_text()))
 
 
 # --- Pure geodesic helpers -------------------------------------------------
+
 
 def bearing(origin, destination):
     """Initial great-circle bearing in degrees from origin to destination."""
@@ -37,7 +48,9 @@ def bearing(origin, destination):
     lat2, lon2 = math.radians(destination[0]), math.radians(destination[1])
     d_lon = lon2 - lon1
     x = math.sin(d_lon) * math.cos(lat2)
-    y = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(d_lon)
+    y = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(
+        d_lon
+    )
     return (math.degrees(math.atan2(x, y)) + 360) % 360
 
 
@@ -71,6 +84,7 @@ def velocity_enu(prev, new, prev_alt, new_alt, dt=ORBIT_TICK_SECONDS):
 
 # --- Orbit task ------------------------------------------------------------
 
+
 class OrbitTask:
     """Handler for the Orbit task type.
 
@@ -90,7 +104,9 @@ class OrbitTask:
       - async ``report_task_failed(task_id)`` called if execution errors.
     """
 
-    SPECIFICATION_URL = "type.googleapis.com/anduril.sample_app_auto_reconnaissance.v1.Orbit"
+    SPECIFICATION_URL = (
+        "type.googleapis.com/anduril.sample_app_auto_reconnaissance.v1.Orbit"
+    )
 
     @classmethod
     def start(cls, asset, specification, task_id):
@@ -184,7 +200,9 @@ class OrbitTask:
         # re-resolved every tick: if it's an entity, it may be moving, so we
         # always steer toward its current position.
         while True:
-            center_lat, center_lon, center_alt = await asset.resolve_objective(objective)
+            center_lat, center_lon, center_alt = await asset.resolve_objective(
+                objective
+            )
             center = (center_lat, center_lon)
             # Maintain orbit_height of vertical separation above the objective.
             target_alt = center_alt + orbit_height
@@ -214,7 +232,9 @@ class OrbitTask:
         at_target_altitude = False  # Latch so we log the arrival only once.
         while True:
             # Re-resolve so a moving objective drags the circle along with it.
-            center_lat, center_lon, center_alt = await asset.resolve_objective(objective)
+            center_lat, center_lon, center_alt = await asset.resolve_objective(
+                objective
+            )
             center = (center_lat, center_lon)
             target_alt = center_alt + orbit_height
             prev = (asset.location["latitude"], asset.location["longitude"])

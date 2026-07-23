@@ -40,6 +40,7 @@ TASK_HANDLERS = {
     OrbitTask.SPECIFICATION_URL: OrbitTask,
 }
 
+
 class SimulatedAsset:
     def __init__(
         self,
@@ -54,14 +55,22 @@ class SimulatedAsset:
         self.entity_id = entity_id
 
         self.location = location  # Dict with latitude, longitude, altitude_hae_meters.
-        self.velocity_enu = {"e": 0.0, "n": 0.0, "u": 0.0}  # Current velocity (m/s) in East/North/Up.
-        self.climb_rate_mps = climb_rate_mps  # Vertical speed used when changing altitude.
-        self._active_task = None  # asyncio.Task for the task currently being executed, if any.
+        self.velocity_enu = {
+            "e": 0.0,
+            "n": 0.0,
+            "u": 0.0,
+        }  # Current velocity (m/s) in East/North/Up.
+        self.climb_rate_mps = (
+            climb_rate_mps  # Vertical speed used when changing altitude.
+        )
+        self._active_task = (
+            None  # asyncio.Task for the task currently being executed, if any.
+        )
 
     async def run(self):
         tasks = [
             asyncio.create_task(self.publish_asset()),
-            asyncio.create_task(self.listen_for_tasks())
+            asyncio.create_task(self.listen_for_tasks()),
         ]
         try:
             await asyncio.gather(*tasks, return_exceptions=True)
@@ -100,14 +109,14 @@ class SimulatedAsset:
                 )
             ),
             health=Health(
-              connection_status="CONNECTION_STATUS_ONLINE",
-              health_status="HEALTH_STATUS_HEALTHY",  
+                connection_status="CONNECTION_STATUS_ONLINE",
+                health_status="HEALTH_STATUS_HEALTHY",
             ),
             location=Location(
                 position=Position(
                     latitude_degrees=self.location["latitude"],
                     longitude_degrees=self.location["longitude"],
-                    altitude_hae_meters=self.location["altitude_hae_meters"]
+                    altitude_hae_meters=self.location["altitude_hae_meters"],
                 ),
                 speed_mps=math.hypot(self.velocity_enu["e"], self.velocity_enu["n"]),
                 velocity_enu=Enu(
@@ -119,7 +128,7 @@ class SimulatedAsset:
             mil_view=MilView(
                 disposition="DISPOSITION_FRIENDLY",
                 environment="ENVIRONMENT_AIR",
-                platform_type="UAV"
+                platform_type="UAV",
             ),
             provenance=Provenance(
                 data_type="Simulated Asset",
@@ -129,8 +138,7 @@ class SimulatedAsset:
             ontology=Ontology(template="TEMPLATE_ASSET", platform_type="UAV"),
             task_catalog=TaskCatalog(
                 task_definitions=[
-                    TaskDefinition(task_specification_url=url)
-                    for url in TASK_HANDLERS
+                    TaskDefinition(task_specification_url=url) for url in TASK_HANDLERS
                 ]
             ),
         )
@@ -173,7 +181,9 @@ class SimulatedAsset:
             spec_url = task.specification.type
             handler = TASK_HANDLERS.get(spec_url)
             if handler is None:
-                self.logger.error(f"received unsupported task type {spec_url}, rejecting")
+                self.logger.error(
+                    f"received unsupported task type {spec_url}, rejecting"
+                )
                 await self._report_terminal_status(task_id, "STATUS_DONE_NOT_OK")
                 return
 
@@ -181,7 +191,7 @@ class SimulatedAsset:
             try:
                 self._cancel_active_task()
                 self._active_task = handler.start(self, task.specification, task_id)
-                
+
                 await self.client.tasks.update_task_status(
                     # For an extenesive list of supported task status values, reference
                     new_status=TaskStatus(status="STATUS_EXECUTING"),
@@ -315,7 +325,11 @@ def main():
         logger,
         client,
         "asset-01",
-        {"latitude": cfg["asset-latitude"], "longitude": cfg["asset-longitude"], "altitude_hae_meters": cfg["asset_altitude_hae_meters"]},
+        {
+            "latitude": cfg["asset-latitude"],
+            "longitude": cfg["asset-longitude"],
+            "altitude_hae_meters": cfg["asset_altitude_hae_meters"],
+        },
         cfg["asset_climb_rate"],
     )
 

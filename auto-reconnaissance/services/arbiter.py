@@ -28,7 +28,12 @@ class Arbiter:
         )
         self.cache_manager = CacheManager()
         self.tasker = Tasker(
-            logger, lattice_endpoint, client_id, client_secret, sandboxes_token, orbit_params
+            logger,
+            lattice_endpoint,
+            client_id,
+            client_secret,
+            sandboxes_token,
+            orbit_params,
         )
 
     async def start(self):
