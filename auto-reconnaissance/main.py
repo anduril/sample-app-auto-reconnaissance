@@ -3,7 +3,6 @@ import logging
 from asyncio import run
 
 import yaml
-
 from services.arbiter import Arbiter
 
 

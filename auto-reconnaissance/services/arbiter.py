@@ -1,13 +1,10 @@
 import asyncio
-
 from logging import Logger
-from typing import Optional
-
-from utils.distance_calculator import DistanceCalculator
 
 from services.cache_manager import CacheManager
 from services.entity_handler import EntityHandler
 from services.tasker import Tasker
+from utils.distance_calculator import DistanceCalculator
 
 DISTANCE_THRESHOLD_MILES = 5
 
@@ -19,8 +16,8 @@ class Arbiter:
         lattice_endpoint: str,
         client_id: str,
         client_secret: str,
-        sandboxes_token: Optional[str] = None,
-        orbit_params: Optional[dict] = None,
+        sandboxes_token: str | None = None,
+        orbit_params: dict | None = None,
     ):
         self.logger = logger
         self.entity_handler = EntityHandler(

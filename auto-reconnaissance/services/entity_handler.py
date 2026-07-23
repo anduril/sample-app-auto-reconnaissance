@@ -1,11 +1,8 @@
 import asyncio
-
 from datetime import datetime, timezone
 from logging import Logger
-from typing import Optional
 
-from anduril import AsyncLattice
-from anduril import Entity, MilView, Provenance
+from anduril import AsyncLattice, Entity, MilView, Provenance
 
 
 class EntityHandler:
@@ -15,7 +12,7 @@ class EntityHandler:
         lattice_endpoint: str,
         client_id: str,
         client_secret: str,
-        sandboxes_token: Optional[str] = None,
+        sandboxes_token: str | None = None,
     ):
         self.logger = logger
         self.client = AsyncLattice(
@@ -40,9 +37,7 @@ class EntityHandler:
         """
         ontology_template = entity.ontology.template
         mil_view_disposition = entity.mil_view.disposition
-        if ontology_template == "TEMPLATE_ASSET":
-            return True
-        elif (
+        if ontology_template == "TEMPLATE_ASSET" or (
             ontology_template == "TEMPLATE_TRACK"
             and mil_view_disposition != "DISPOSITION_FRIENDLY"
         ):

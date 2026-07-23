@@ -2,15 +2,14 @@ import argparse
 import asyncio
 import logging
 import math
+from datetime import datetime, timedelta, timezone
 
 import httpx
-
-from datetime import datetime, timezone, timedelta
-
-from anduril import AsyncLattice
+import yaml
 from anduril import (
     AgentRequest,
     Aliases,
+    AsyncLattice,
     Classification,
     ClassificationInformation,
     Entity,
@@ -28,9 +27,6 @@ from anduril import (
     TaskDefinition,
     TaskStatus,
 )
-
-import yaml
-
 from orbit import OrbitTask
 
 EXPIRY_OFFSET = 15
@@ -81,7 +77,6 @@ class SimulatedAsset:
             await asyncio.gather(*tasks, return_exceptions=True)
         finally:
             self.logger.info(f"Shutting down Simulated Asset {self.entity_id}")
-        pass
 
     async def publish_asset(self):
         self.logger.info(f"starting publish task for simulated asset {self.entity_id}")
@@ -337,7 +332,6 @@ def main():
         asyncio.run(asset.run())
     except KeyboardInterrupt:
         logger.info("keyboard interrupt detected")
-    pass
 
 
 if __name__ == "__main__":

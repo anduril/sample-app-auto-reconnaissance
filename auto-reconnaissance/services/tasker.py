@@ -1,12 +1,11 @@
 import json
 from logging import Logger
 from pathlib import Path
-from typing import Optional
 
-from anduril import Lattice
 from anduril import (
     Entity,
     GoogleProtobufAny,
+    Lattice,
     Principal,
     Relations,
     System,
@@ -41,8 +40,8 @@ class Tasker:
         lattice_ip: str,
         client_id: str,
         client_secret: str,
-        sandboxes_token: Optional[str] = None,
-        orbit_params: Optional[dict] = None,
+        sandboxes_token: str | None = None,
+        orbit_params: dict | None = None,
     ):
         self.logger = logger
         self.orbit_params = orbit_params or {}

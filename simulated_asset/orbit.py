@@ -14,7 +14,8 @@ import math
 from pathlib import Path
 
 from geopy import Point
-from geopy.distance import distance as geo_distance, geodesic
+from geopy.distance import distance as geo_distance
+from geopy.distance import geodesic
 from jsonschema import Draft202012Validator
 
 # Orbit behavior tuning.
