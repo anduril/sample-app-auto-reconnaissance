@@ -111,6 +111,6 @@ class Arbiter:
                         self.cache_manager.get_asset_tasks(asset.entity_id) is None
                         and self.cache_manager.get_track_tasks(track.entity_id) is None
                     ):
-                        task_id = self.tasker.investigate(asset, track)
+                        task_id = self.tasker.orbit(asset, track)
                         self.cache_manager.add_asset_task(asset, task_id)
                         self.cache_manager.add_track_task(track, task_id)

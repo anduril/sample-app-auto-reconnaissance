@@ -78,7 +78,7 @@ class Tasker:
 
         return specification
 
-    def investigate(self, asset: Entity, track: Entity) -> str:
+    def orbit(self, asset: Entity, track: Entity) -> str:
         try:
             self.logger.info(
                 f"Asset {asset.entity_id} tasked to Orbit Track {track.entity_id}"
