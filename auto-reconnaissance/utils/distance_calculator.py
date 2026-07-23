@@ -1,5 +1,4 @@
 from anduril import Entity
-
 from geopy.distance import geodesic
 
 

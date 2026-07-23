@@ -1,0 +1,64 @@
+{
+  "$id": "anduril.sample_app_auto_reconnaissance.v1.Orbit.jsonschema.strict.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Task instructing the Agent to Orbit the Objective in a pattern as close to a circle as possible \n with the Objective as the centerpoint.",
+  "properties": {
+    "objective": {
+      "$ref": "anduril.sample_app_auto_reconnaissance.v1.Objective.jsonschema.strict.json",
+      "description": "Centerpoint of loiter orbit"
+    },
+    "orbitDirection": {
+      "description": "Determines the direction of the orbit.",
+      "enum": [
+        "ORBIT_CLOCKWISE",
+        "ORBIT_COUNTERCLOCKWISE"
+      ],
+      "title": "Orbit Direction",
+      "type": "string"
+    },
+    "orbitHeight": {
+      "anyOf": [
+        {
+          "maximum": 3.4028234663852886e+38,
+          "minimum": -3.4028234663852886e+38,
+          "type": "number"
+        },
+        {
+          "enum": [
+            "Infinity",
+            "-Infinity",
+            "NaN"
+          ],
+          "type": "string"
+        }
+      ],
+      "description": "Minimum Altitude difference to maintain from the target to try to maintain"
+    },
+    "orbitRadius": {
+      "anyOf": [
+        {
+          "maximum": 3.4028234663852886e+38,
+          "minimum": -3.4028234663852886e+38,
+          "type": "number"
+        },
+        {
+          "enum": [
+            "Infinity",
+            "-Infinity",
+            "NaN"
+          ],
+          "type": "string"
+        }
+      ],
+      "description": "Radius of Orbit circle in Meters"
+    }
+  },
+  "required": [
+    "orbitRadius",
+    "orbitHeight",
+    "orbitDirection"
+  ],
+  "title": "Orbit",
+  "type": "object"
+}

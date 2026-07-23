@@ -1,12 +1,19 @@
-lattice-endpoint: <LATTICE_ENDPOINT>
-lattice-client-id: <LATTICE_CLIENT_ID>
-lattice-client-secret: <LATTICE_CLIENT_SECRET>
-sandboxes-token: <SANDBOXES_TOKEN>
+lattice-endpoint: <sandbox_endpoint>
+lattice-client-id: <sandbox_client_id>
+lattice-client-secret: <sandbox_client_secret>
+sandboxes-token: <sandboxes_token>
 
 # Asset latitude and longitude
-asset-latitude: 1
-asset-longitude: 1
+asset-latitude: 21.093030
+asset-longitude: -11.380946
+asset_altitude_hae_meters : 1000
+asset_climb_rate: 25
 
 # Track latitude and longitude
-track-latitude: 1.03
-track-longitude: 1.03
+track-latitude: 21.120309
+track-longitude: -11.400732
+
+# Orbit task parameters used when tasking an asset to investigate a track.
+orbit-radius-meters: 1000
+orbit-height-meters: 100
+orbit-direction: ORBIT_CLOCKWISE

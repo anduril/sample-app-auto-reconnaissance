@@ -1,13 +1,11 @@
 import asyncio
-
 from logging import Logger
-from typing import Optional
 
-from utils.distance_calculator import DistanceCalculator
-
+from anduril.core import ApiError
 from services.cache_manager import CacheManager
 from services.entity_handler import EntityHandler
 from services.tasker import Tasker
+from utils.distance_calculator import DistanceCalculator
 
 DISTANCE_THRESHOLD_MILES = 5
 
@@ -19,7 +17,8 @@ class Arbiter:
         lattice_endpoint: str,
         client_id: str,
         client_secret: str,
-        sandboxes_token: Optional[str] = None,
+        sandboxes_token: str | None = None,
+        orbit_params: dict | None = None,
     ):
         self.logger = logger
         self.entity_handler = EntityHandler(
@@ -27,7 +26,12 @@ class Arbiter:
         )
         self.cache_manager = CacheManager()
         self.tasker = Tasker(
-            logger, lattice_endpoint, client_id, client_secret, sandboxes_token
+            logger,
+            lattice_endpoint,
+            client_id,
+            client_secret,
+            sandboxes_token,
+            orbit_params,
         )
 
     async def start(self):
@@ -50,7 +54,7 @@ class Arbiter:
                 self.cache_manager.handle_response(entity)
         except asyncio.CancelledError:
             print("Streaming cancelled...")
-        except Exception as error:
+        except ApiError as error:
             print(f"Exception: {error}")
 
     async def recon_job(self):
@@ -107,6 +111,6 @@ class Arbiter:
                         self.cache_manager.get_asset_tasks(asset.entity_id) is None
                         and self.cache_manager.get_track_tasks(track.entity_id) is None
                     ):
-                        task_id = self.tasker.investigate(asset, track)
+                        task_id = self.tasker.orbit(asset, track)
                         self.cache_manager.add_asset_task(asset, task_id)
                         self.cache_manager.add_track_task(track, task_id)

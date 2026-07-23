@@ -1,0 +1,62 @@
+{
+  "$id": "anduril.sample_app_auto_reconnaissance.v1.LLA.jsonschema.strict.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "altitudeHaeM": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "enum": [
+            "Infinity",
+            "-Infinity",
+            "NaN"
+          ],
+          "type": "string"
+        }
+      ],
+      "description": "Altitude in Height Above Ellipsoid (WGS84) in Meters"
+    },
+    "latitudeDegrees": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "enum": [
+            "Infinity",
+            "-Infinity",
+            "NaN"
+          ],
+          "type": "string"
+        }
+      ],
+      "description": "Latitude in degrees"
+    },
+    "longitudeDegrees": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "enum": [
+            "Infinity",
+            "-Infinity",
+            "NaN"
+          ],
+          "type": "string"
+        }
+      ],
+      "description": "Longitude in degrees"
+    }
+  },
+  "required": [
+    "latitudeDegrees",
+    "longitudeDegrees",
+    "altitudeHaeM"
+  ],
+  "title": "LLA",
+  "type": "object"
+}

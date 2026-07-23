@@ -1,12 +1,9 @@
 import asyncio
-import json
-
 from datetime import datetime, timezone
 from logging import Logger
-from typing import Optional
 
-from anduril import AsyncLattice
-from anduril import Entity, MilView, Provenance
+from anduril import AsyncLattice, Entity, MilView, Provenance
+from anduril.core import ApiError
 
 
 class EntityHandler:
@@ -16,7 +13,7 @@ class EntityHandler:
         lattice_endpoint: str,
         client_id: str,
         client_secret: str,
-        sandboxes_token: Optional[str] = None,
+        sandboxes_token: str | None = None,
     ):
         self.logger = logger
         self.client = AsyncLattice(
@@ -41,28 +38,17 @@ class EntityHandler:
         """
         ontology_template = entity.ontology.template
         mil_view_disposition = entity.mil_view.disposition
-        if ontology_template == "TEMPLATE_ASSET":
-            return True
-        elif (
-            ontology_template == "TEMPLATE_TRACK"
-            and mil_view_disposition != "DISPOSITION_FRIENDLY"
-        ):
-            return True
-        else:
-            return False
+        return bool(ontology_template == "TEMPLATE_ASSET" or ontology_template == "TEMPLATE_TRACK" and mil_view_disposition != "DISPOSITION_FRIENDLY")
 
     async def stream_entities(self):
         try:
             event_stream = self.client.entities.stream_entities(pre_existing_only=False)
             async for event in event_stream:
-                if event.event == "entity":
-                    event_data = json.loads(event.data)
-                    entity_data = event_data.get("entity")
-                    typed_entity = Entity.model_validate(entity_data)
-                    yield typed_entity
+                if event.event == "entity" and event.entity is not None:
+                    yield event.entity
         except asyncio.CancelledError:
             print("Streaming cancelled...")
-        except Exception as error:
+        except ApiError as error:
             print(f"Exception: {error}")
 
     async def override_track_disposition(self, track: Entity):
@@ -87,5 +73,5 @@ class EntityHandler:
                 provenance=override_provenance,
             )
             return
-        except Exception as error:
+        except ApiError as error:
             self.logger.error(f"lattice api stream entities error {error}")

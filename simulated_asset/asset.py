@@ -1,17 +1,21 @@
 import argparse
 import asyncio
 import logging
+import math
+from datetime import datetime, timedelta, timezone
+
 import httpx
-
-from datetime import datetime, timezone, timedelta
-
-from anduril import AsyncLattice
+import yaml
 from anduril import (
     AgentRequest,
     Aliases,
+    AsyncLattice,
+    Classification,
+    ClassificationInformation,
     Entity,
     EntityIdsSelector,
     Enu,
+    Health,
     Location,
     MilView,
     Ontology,
@@ -23,12 +27,15 @@ from anduril import (
     TaskDefinition,
     TaskStatus,
 )
-
-import yaml
+from anduril.core import ApiError
+from orbit import OrbitTask
 
 EXPIRY_OFFSET = 15
 REFRESH_INTERVAL = 5
 STATUS_VERSION_COUNTER = 1
+TASK_HANDLERS = {
+    OrbitTask.SPECIFICATION_URL: OrbitTask,
+}
 
 
 class SimulatedAsset:
@@ -38,11 +45,24 @@ class SimulatedAsset:
         client: AsyncLattice,
         entity_id: str,
         location: dict,
+        climb_rate_mps: float,
     ):
         self.logger = logger
         self.client = client
         self.entity_id = entity_id
-        self.location = location
+
+        self.location = location  # Dict with latitude, longitude, altitude_hae_meters.
+        self.velocity_enu = {
+            "e": 0.0,
+            "n": 0.0,
+            "u": 0.0,
+        }  # Current velocity (m/s) in East/North/Up.
+        self.climb_rate_mps = (
+            climb_rate_mps  # Vertical speed used when changing altitude.
+        )
+        self._active_task = (
+            None  # asyncio.Task for the task currently being executed, if any.
+        )
 
     async def run(self):
         tasks = [
@@ -58,7 +78,6 @@ class SimulatedAsset:
             await asyncio.gather(*tasks, return_exceptions=True)
         finally:
             self.logger.info(f"Shutting down Simulated Asset {self.entity_id}")
-        pass
 
     async def publish_asset(self):
         self.logger.info(f"starting publish task for simulated asset {self.entity_id}")
@@ -67,7 +86,7 @@ class SimulatedAsset:
                 await self.client.entities.publish_entity(
                     **(self.generate_asset_entity().model_dump())
                 )
-            except Exception as error:
+            except ApiError as error:
                 self.logger.error(f"lattice api stream entities error {error}")
 
             await asyncio.sleep(REFRESH_INTERVAL)
@@ -80,30 +99,42 @@ class SimulatedAsset:
             aliases=Aliases(
                 name=f"Simulated Asset {self.entity_id}",
             ),
+            data_classification=Classification(
+                default=ClassificationInformation(
+                    level="CLASSIFICATION_LEVELS_UNCLASSIFIED"
+                )
+            ),
+            health=Health(
+                connection_status="CONNECTION_STATUS_ONLINE",
+                health_status="HEALTH_STATUS_HEALTHY",
+            ),
             location=Location(
                 position=Position(
                     latitude_degrees=self.location["latitude"],
                     longitude_degrees=self.location["longitude"],
-                    altitude_hae_meters=55,  # arbitrary value so asset is above mean sea level
+                    altitude_hae_meters=self.location["altitude_hae_meters"],
                 ),
-                speed_mps=1,
-                velocity_enu=Enu(e=1, n=1, u=0),
+                speed_mps=math.hypot(self.velocity_enu["e"], self.velocity_enu["n"]),
+                velocity_enu=Enu(
+                    e=self.velocity_enu["e"],
+                    n=self.velocity_enu["n"],
+                    u=self.velocity_enu["u"],
+                ),
             ),
             mil_view=MilView(
                 disposition="DISPOSITION_FRIENDLY",
-                environment="ENVIRONMENT_SURFACE",
+                environment="ENVIRONMENT_AIR",
+                platform_type="UAV",
             ),
             provenance=Provenance(
                 data_type="Simulated Asset",
                 integration_name="auto-reconnaissance-sample-app",
                 source_update_time=datetime.now(timezone.utc),
             ),
-            ontology=Ontology(template="TEMPLATE_ASSET", platform_type="USV"),
+            ontology=Ontology(template="TEMPLATE_ASSET", platform_type="UAV"),
             task_catalog=TaskCatalog(
                 task_definitions=[
-                    TaskDefinition(
-                        task_specification_url="type.googleapis.com/anduril.tasks.v2.Investigate"
-                    )
+                    TaskDefinition(task_specification_url=url) for url in TASK_HANDLERS
                 ]
             ),
         )
@@ -124,18 +155,39 @@ class SimulatedAsset:
                     await self.process_task_event(agent_request)
             except httpx.ReadTimeout:
                 continue  # Long polling expects re-initiating the request after 5 minutes.
-            except Exception as error:
+            except ApiError as error:
                 self.logger.error(f"simulated asset task processing error {error}")
 
     async def process_task_event(self, agent_request: AgentRequest):
         global STATUS_VERSION_COUNTER
         STATUS_VERSION_COUNTER += 1
-        self.logger.info(
-            f"Received task request: {'Execute' if agent_request.execute_request else 'Cancel'}"
-        )
         if agent_request.execute_request:
-            self.logger.info("received execute request, sending execute confirmation")
+            request_kind = "Execute"
+        elif agent_request.cancel_request:
+            request_kind = "Cancel"
+        elif agent_request.complete_request:
+            request_kind = "Complete"
+        else:
+            request_kind = "Unknown"
+        self.logger.info(f"Received task request: {request_kind}")
+        if agent_request.execute_request:
+            task = agent_request.execute_request.task
+            task_id = task.version.task_id
+
+            spec_url = task.specification.type
+            handler = TASK_HANDLERS.get(spec_url)
+            if handler is None:
+                self.logger.error(
+                    f"received unsupported task type {spec_url}, rejecting"
+                )
+                await self._report_terminal_status(task_id, "STATUS_DONE_NOT_OK")
+                return
+
+            self.logger.info("Sending execute confirmation")
             try:
+                self._cancel_active_task()
+                self._active_task = handler.start(self, task.specification, task_id)
+
                 await self.client.tasks.update_task_status(
                     # For an extenesive list of supported task status values, reference
                     new_status=TaskStatus(status="STATUS_EXECUTING"),
@@ -144,24 +196,79 @@ class SimulatedAsset:
                     # increments to indicate the task's current stage in its status lifecycle. Whenever a task's status updates,
                     # the status version increments by one. Any status updates received with a lower status version number than
                     # what is known are considered stale and ignored.
-                    task_id=agent_request.execute_request.task.version.task_id,
+                    task_id=task_id,
                 )
-            except Exception as error:
+            except ApiError as error:
                 self.logger.error(f"simulated asset listening agent error {error}")
+                return
+
         elif agent_request.cancel_request:
             self.logger.info("received cancel request, sending cancel confirmation")
-            try:
-                await self.client.tasks.update_task_status(
-                    new_status=TaskStatus(status="STATUS_DONE_NOT_OK"),
-                    author=Principal(system=System(entity_id=self.entity_id)),
-                    status_version=STATUS_VERSION_COUNTER,  # Integration is to track its own status version. This version number
-                    # increments to indicate the task's current stage in its status lifecycle. Whenever a task's status updates,
-                    # the status version increments by one. Any status updates received with a lower status version number than
-                    # what is known are considered stale and ignored.
-                    task_id=agent_request.cancel_request.task_id,
-                )
-            except Exception as error:
-                self.logger.error(f"simulated asset listening agent error {error}")
+            self._cancel_active_task()
+            await self._report_terminal_status(
+                agent_request.cancel_request.task_id, "STATUS_DONE_NOT_OK"
+            )
+
+        elif agent_request.complete_request:
+            self.logger.info("received complete request, sending complete confirmation")
+            self._cancel_active_task()
+            await self._report_terminal_status(
+                agent_request.complete_request.task_id, "STATUS_DONE_OK"
+            )
+
+    async def _report_terminal_status(self, task_id: str, status: str):
+        try:
+            await self.client.tasks.update_task_status(
+                new_status=TaskStatus(status=status),
+                author=Principal(system=System(entity_id=self.entity_id)),
+                status_version=STATUS_VERSION_COUNTER,  # Integration is to track its own status version. This version number
+                # increments to indicate the task's current stage in its status lifecycle. Whenever a task's status updates,
+                # the status version increments by one. Any status updates received with a lower status version number than
+                # what is known are considered stale and ignored.
+                task_id=task_id,
+            )
+        except ApiError as error:
+            self.logger.error(f"simulated asset listening agent error {error}")
+
+    def _cancel_active_task(self):
+        if self._active_task and not self._active_task.done():
+            self._active_task.cancel()
+        self._active_task = None
+        # No active tasking means the asset is holding position.
+        self.velocity_enu = {"e": 0.0, "n": 0.0, "u": 0.0}
+
+    async def report_task_failed(self, task_id: str):
+        """Report that the active task could not be completed. Called by handlers."""
+        await self._report_terminal_status(task_id, "STATUS_DONE_NOT_OK")
+
+    async def resolve_objective(self, objective: dict):
+        """Return the (latitude, longitude, altitude_hae_m) center for an Orbit objective.
+
+        The objective is a oneof: either an inline `lla` position or an
+        `entityId` we resolve to a live entity's current location.
+        """
+        if not objective:
+            raise ValueError("orbit task has no objective")
+
+        if objective.get("lla"):
+            lla = objective["lla"]
+            return (
+                lla["latitudeDegrees"],
+                lla["longitudeDegrees"],
+                lla.get("altitudeHaeM", 0.0),
+            )
+
+        entity_id = objective.get("entityId")
+        if entity_id:
+            entity = await self.client.entities.get_entity(entity_id)
+            position = entity.location.position
+            return (
+                position.latitude_degrees,
+                position.longitude_degrees,
+                position.altitude_hae_meters or 0.0,
+            )
+
+        raise ValueError(f"unsupported orbit objective: {objective}")
 
 
 def validate_config(cfg):
@@ -213,14 +320,18 @@ def main():
         logger,
         client,
         "asset-01",
-        {"latitude": cfg["asset-latitude"], "longitude": cfg["asset-longitude"]},
+        {
+            "latitude": cfg["asset-latitude"],
+            "longitude": cfg["asset-longitude"],
+            "altitude_hae_meters": cfg["asset_altitude_hae_meters"],
+        },
+        cfg["asset_climb_rate"],
     )
 
     try:
         asyncio.run(asset.run())
     except KeyboardInterrupt:
         logger.info("keyboard interrupt detected")
-    pass
 
 
 if __name__ == "__main__":

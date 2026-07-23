@@ -1,0 +1,145 @@
+{
+  "$defs": {
+    "anduril.sample_app_auto_reconnaissance.v1.LLA.schema.strict.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "altitude_hae_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "Altitude in Height Above Ellipsoid (WGS84) in Meters"
+        },
+        "latitude_degrees": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "Latitude in degrees"
+        },
+        "longitude_degrees": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "Longitude in degrees"
+        }
+      },
+      "required": [
+        "latitude_degrees",
+        "longitude_degrees",
+        "altitude_hae_m"
+      ],
+      "title": "LLA",
+      "type": "object"
+    },
+    "anduril.sample_app_auto_reconnaissance.v1.Objective.schema.strict.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "type": "string"
+        },
+        "lla": {
+          "$ref": "#/$defs/anduril.sample_app_auto_reconnaissance.v1.LLA.schema.strict.json"
+        }
+      },
+      "title": "Objective",
+      "type": "object"
+    },
+    "anduril.sample_app_auto_reconnaissance.v1.Orbit.schema.strict.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "description": "Task instructing the Agent to Orbit the Objective in a pattern as close to a circle as possible \n with the Objective as the centerpoint.",
+      "properties": {
+        "objective": {
+          "$ref": "#/$defs/anduril.sample_app_auto_reconnaissance.v1.Objective.schema.strict.json",
+          "description": "Centerpoint of loiter orbit"
+        },
+        "orbit_direction": {
+          "description": "Determines the direction of the orbit.",
+          "enum": [
+            "ORBIT_CLOCKWISE",
+            "ORBIT_COUNTERCLOCKWISE"
+          ],
+          "title": "Orbit Direction",
+          "type": "string"
+        },
+        "orbit_height": {
+          "anyOf": [
+            {
+              "maximum": 3.4028234663852886e+38,
+              "minimum": -3.4028234663852886e+38,
+              "type": "number"
+            },
+            {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "Minimum Altitude difference to maintain from the target to try to maintain"
+        },
+        "orbit_radius": {
+          "anyOf": [
+            {
+              "maximum": 3.4028234663852886e+38,
+              "minimum": -3.4028234663852886e+38,
+              "type": "number"
+            },
+            {
+              "enum": [
+                "Infinity",
+                "-Infinity",
+                "NaN"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "Radius of Orbit circle in Meters"
+        }
+      },
+      "required": [
+        "orbit_radius",
+        "orbit_height",
+        "orbit_direction"
+      ],
+      "title": "Orbit",
+      "type": "object"
+    }
+  },
+  "$id": "anduril.sample_app_auto_reconnaissance.v1.Orbit.schema.strict.bundle.json",
+  "$ref": "#/$defs/anduril.sample_app_auto_reconnaissance.v1.Orbit.schema.strict.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

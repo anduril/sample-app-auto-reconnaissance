@@ -2,18 +2,19 @@ import argparse
 import logging
 import time
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
-from anduril import Lattice
+import yaml
 from anduril import (
     Aliases,
+    Lattice,
     Location,
     MilView,
     Ontology,
     Position,
     Provenance,
 )
-import yaml
+from anduril.core import ApiError
 
 EXPIRY_OFFSET = 15
 REFRESH_INTERVAL = 5
@@ -97,7 +98,7 @@ def start_track_publishing():
                     template="TEMPLATE_TRACK",
                 ),
             )
-        except Exception as error:
+        except ApiError as error:
             logger.error(f"error publishing simulated track {error}")
         time.sleep(REFRESH_INTERVAL)
 

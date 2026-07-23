@@ -2,17 +2,20 @@
 
 ## Description
 
-This app shows how to use the Lattice REST SDK for Python SDKs perform a simulated auto-reconnaissance task.
+This app demonstrates how to use the Lattice REST SDK for Python SDKs perform a simulated auto-reconnaissance scenario.
+
+This is comprised of three independent programs that work in conjunction; 
+1. `simulated_track`: Publishes a representative Track, representing a real-world object that can't be commanded, such as a point-of-interest from a sensor. 
+1. `simulated_asset`: Simulates an aerial vehicle that can be tasked to Orbit a point of interest. This uses the Orbit task, defined in `tasks/sim_asset_tasks.proto`
+1. `auto-reconnaissance`: Tasks the simulated asset based on the location of the simulated track. This demonstrates how to create Tasks to control Agents in Lattice. 
 
 The program streams all incoming entities with the Entities API, then determines if there is any non-friendly track within a certain distance from an asset.
-If this requirement is fulfilled, the auto-reconnaissance system classifies the track disposition as suspicious, and creates an `Investigation` task for the asset to investigate the track.
-
-You will create a pair of entities: a simulated asset, and a simulated track for a demonstration of this process.
+If this requirement is fulfilled, the auto-reconnaissance system classifies the track disposition as suspicious, and creates an `Orbit` task for the asset to loop around the track.
 
 ## How to run locally
 
 #### Prerequisites
-- Python version greater than or equal to 3.9
+- Python version greater than or equal to 3.13
 
 #### Before you begin
 
@@ -45,11 +48,7 @@ pip install -r requirements.txt
     * `<LATTICE_CLIENT_SECRET>` - Your Lattice environment client secret.
     *  `<SANDBOXES_TOKEN>` If you are using Lattice Sandboxes, get this from [Account & Security](https://sandboxes.developer.anduril.com/user-settings) page. For more information on obtaining these tokens, see the [Sandboxes documentation](https://developer.anduril.com/guides/getting-started/sandboxes#get-the-tokens)
 
-* If you would like to change the latitude and longitude of your simulated asset and track, you can do so in the corresponding config files. The **default distance threshold for the auto reconnaissance system is 5 miles**. Ensure that the latitude and longitude inputs for your asset and track are within this distance.
-    ```
-    latitude: <YOUR_LATITUDE>
-    longitude: <YOUR_LONGITUDE>
-    ```
+* You can change the location of your simulated asset and track from the `var/config.yml` file. The **default distance threshold for the auto reconnaissance system is 5 miles**. Ensure that the latitude and longitude inputs for your asset and track are within this distance.
 
 #### Run the program
 
@@ -67,6 +66,14 @@ python simulated_asset/asset.py --config var/config.yml
 python simulated_track/track.py --config var/config.yml
 ```
 
+
+You can view a comprehensive description of the Entities and Tasks in this app from the Developer Console (`https://<your_sandbox_url>/developer-console`). 
+![img](/static/auto-recon-orbit-dev-console.png)
+
+While the Task is executing, you can also observe the Asset orbiting the Track via the UI (`https://<your_sandbox_url>/c2`).
+![img](/static/auto-recon-orbit-c2-ui.png)
+
+
 Navigate to your Lattice UI and observe the `Active Tasks` tab. When assets come within range of a non-friendly track, an investigation task will be created. If you observe the simulated asset and track, you will see that the auto reconnaissance system will classify the track disposition as suspicious, and a task will be created for the asset to investigate the track. 
 
 On the console, you will see the auto reconnaissance system creating a task:
@@ -83,7 +90,15 @@ INFO:SIMASSET:received execute request, sending execute confirmation
 
 Afterwards, the auto reconnaissance system will continuously check the status of any tasks being executed.
 
-Here is a screenshot of this in action:
-![img](/static/auto_recon_asset_investigate_track_example.png)
+## Tasking Breakdown 
 
-Congrats, you've tasked an asset to investigate a track!
+The workflow in this app centers around the Orbit task, which defines the information the Asset requires to execute an Orbit action. The main `auto-reconnaissance` program watches the COP and determines if the 
+Asset is in range of a Track. Once that condition is satisfied, it creates an Orbit task and delivers it to the Asset using the Tasking APIs.
+
+
+### Orbit Task Schema 
+
+The `Orbit` message is defined in `tasks/sim_asset_tasks.proto`, and has been published to the [sample-app-auto-reconnaissance](https://schema-registry.developer.anduril.com/anduril/sample-app-auto-reconnaissance) repo in the Lattice Schema Registry (LSR). See the [LSR docs](https://developer.anduril.com/guides/developer-tools/registry) for more info on how to register schema definitions with Lattice. 
+
+
+We use the [generated jsonschemas](https://schema-registry.developer.anduril.com/anduril/sample-app-auto-reconnaissance/sdks/main:bufbuild/protoschema-jsonschema) from the LSR to form the Orbit task object in `auto-reconnaissance/services/tasker.py` and to perform runtime validation when the Asset receives the Task in `simulated_asset/orbit.py`. A snapshot of the generated jsonschemas can be found in `tasks/jsonschema`.
