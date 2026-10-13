@@ -2,7 +2,7 @@ import argparse
 import logging
 import time
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import yaml
 from anduril import (
@@ -75,7 +75,7 @@ def start_track_publishing():
             client.entities.publish_entity(
                 entity_id=entity_id,
                 is_live=True,
-                expiry_time=datetime.now(timezone.utc)
+                expiry_time=datetime.now(UTC)
                 + timedelta(seconds=EXPIRY_OFFSET),
                 aliases=Aliases(
                     name="Simulated Track",
@@ -92,7 +92,7 @@ def start_track_publishing():
                 provenance=Provenance(
                     data_type="Simulated Track",
                     integration_name="auto-reconnaissance-sample-app",
-                    source_update_time=datetime.now(timezone.utc),
+                    source_update_time=datetime.now(UTC),
                 ),
                 ontology=Ontology(
                     template="TEMPLATE_TRACK",

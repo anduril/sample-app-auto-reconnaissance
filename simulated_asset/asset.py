@@ -2,7 +2,7 @@ import argparse
 import asyncio
 import logging
 import math
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import httpx
 import yaml
@@ -95,7 +95,7 @@ class SimulatedAsset:
         return Entity(
             entity_id=self.entity_id,
             is_live=True,
-            expiry_time=datetime.now(timezone.utc) + timedelta(seconds=EXPIRY_OFFSET),
+            expiry_time=datetime.now(UTC) + timedelta(seconds=EXPIRY_OFFSET),
             aliases=Aliases(
                 name=f"Simulated Asset {self.entity_id}",
             ),
@@ -129,7 +129,7 @@ class SimulatedAsset:
             provenance=Provenance(
                 data_type="Simulated Asset",
                 integration_name="auto-reconnaissance-sample-app",
-                source_update_time=datetime.now(timezone.utc),
+                source_update_time=datetime.now(UTC),
             ),
             ontology=Ontology(template="TEMPLATE_ASSET", platform_type="UAV"),
             task_catalog=TaskCatalog(
