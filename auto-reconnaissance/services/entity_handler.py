@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from logging import Logger
 
 from anduril import AsyncLattice, Entity, MilView, Provenance
@@ -63,7 +63,7 @@ class EntityHandler:
                 integration_name=track.provenance.integration_name,
                 data_type=track.provenance.data_type,
                 source_id=track.provenance.source_id,
-                source_update_time=datetime.now(timezone.utc),
+                source_update_time=datetime.now(UTC),
                 source_description=track.provenance.source_description,
             )
             await self.client.entities.override_entity(
