@@ -11,13 +11,15 @@ class EntityHandler:
         self,
         logger: Logger,
         lattice_endpoint: str,
-        client_id: str,
-        client_secret: str,
+        client_id: str | None,
+        client_secret: str | None,
         sandboxes_token: str | None = None,
+        environment_token: str | None = None,
     ):
         self.logger = logger
         self.client = AsyncLattice(
             base_url=f"https://{lattice_endpoint}",
+            token=environment_token or None,
             client_id=client_id,
             client_secret=client_secret,
             headers={"anduril-sandbox-authorization": f"Bearer {sandboxes_token}"},

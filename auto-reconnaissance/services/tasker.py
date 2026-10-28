@@ -38,15 +38,17 @@ class Tasker:
         self,
         logger: Logger,
         lattice_ip: str,
-        client_id: str,
-        client_secret: str,
+        client_id: str | None,
+        client_secret: str | None,
         sandboxes_token: str | None = None,
         orbit_params: dict | None = None,
+        environment_token: str | None = None,
     ):
         self.logger = logger
         self.orbit_params = orbit_params or {}
         self.client = Lattice(
             base_url=f"https://{lattice_ip}",
+            token=environment_token or None,
             client_id=client_id,
             client_secret=client_secret,
             headers={"anduril-sandbox-authorization": f"Bearer {sandboxes_token}"},
