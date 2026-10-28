@@ -9,16 +9,14 @@ from services.arbiter import Arbiter
 def validate_config(cfg):
     if "lattice-endpoint" not in cfg:
         raise ValueError("missing lattice-endpoint")
-    if "lattice-client-id" not in cfg:
-        raise ValueError("missing lattice-client-id")
-    if "lattice-client-secret" not in cfg:
-        raise ValueError("missing lattice-client-secret")
-    if "sandboxes-token" not in cfg or cfg["sandboxes-token"] == "<SANDBOXES_TOKEN>":
-        logger = logging.getLogger("EARS")
-        logger.warning(
-            "sandboxes-token not set - required for connecting to Lattice Sandboxes"
+    if not cfg.get("environment-token") and not (
+        cfg.get("lattice-client-id") and cfg.get("lattice-client-secret")
+    ):
+        raise ValueError(
+            "missing environment-token, or lattice-client-id and lattice-client-secret"
         )
-        cfg["sandboxes-token"] = None
+    if not cfg.get("sandboxes-token"):
+        raise ValueError("missing sandboxes-token")
 
 
 def parse_arguments():
@@ -52,10 +50,11 @@ async def main_async(cfg):
         arbiter = Arbiter(
             logger,
             cfg["lattice-endpoint"],
-            cfg["lattice-client-id"],
-            cfg["lattice-client-secret"],
+            cfg.get("lattice-client-id"),
+            cfg.get("lattice-client-secret"),
             cfg["sandboxes-token"],
             orbit_params,
+            environment_token=cfg.get("environment-token"),
         )
         await arbiter.start()
     except (KeyboardInterrupt, SystemExit):

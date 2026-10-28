@@ -1,4 +1,6 @@
 lattice-endpoint: <sandbox_endpoint>
+# authenticate with either environment-token, or lattice-client-id and lattice-client-secret
+# environment-token: <environment_token>
 lattice-client-id: <sandbox_client_id>
 lattice-client-secret: <sandbox_client_secret>
 sandboxes-token: <sandboxes_token>
