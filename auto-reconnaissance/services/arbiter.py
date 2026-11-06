@@ -15,14 +15,20 @@ class Arbiter:
         self,
         logger: Logger,
         lattice_endpoint: str,
-        client_id: str,
-        client_secret: str,
+        client_id: str | None,
+        client_secret: str | None,
         sandboxes_token: str | None = None,
         orbit_params: dict | None = None,
+        environment_token: str | None = None,
     ):
         self.logger = logger
         self.entity_handler = EntityHandler(
-            logger, lattice_endpoint, client_id, client_secret, sandboxes_token
+            logger,
+            lattice_endpoint,
+            client_id,
+            client_secret,
+            sandboxes_token,
+            environment_token,
         )
         self.cache_manager = CacheManager()
         self.tasker = Tasker(
@@ -32,6 +38,7 @@ class Arbiter:
             client_secret,
             sandboxes_token,
             orbit_params,
+            environment_token,
         )
 
     async def start(self):
@@ -59,7 +66,10 @@ class Arbiter:
 
     async def recon_job(self):
         while True:
-            await self.arbitrate_isr()
+            try:
+                await self.arbitrate_isr()
+            except ApiError as error:
+                self.logger.error(f"recon job error {error}")
             await asyncio.sleep(1)
 
     def within_range(self, asset, track) -> bool:
