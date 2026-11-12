@@ -36,17 +36,16 @@ cd sample-app-auto-reconnaissance
 
 #### Install dependencies and configure project
 
-1. Navigate to the `requirements.txt` file and change the path to the SDKs according to where you have outputted the `entities_api` and `tasks_api` packages. After updating these paths, run the following command:
+1. Install the dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
 2. Modify the configuration file for the auto reconnaissance system in `var/config.yml`. This is called by all scripts.
 * Replace the following placeholders:
-    * `<LATTICE_ENDPOINT>` - Your Lattice environment endpoint without an `https://` protocol prefix.
-    * `<LATTICE_CLIENT_ID>` - Your Lattice environment client ID.
-    * `<LATTICE_CLIENT_SECRET>` - Your Lattice environment client secret.
-    *  `<SANDBOXES_TOKEN>` If you are using Lattice Sandboxes, get this from [Account & Security](https://sandboxes.developer.anduril.com/user-settings) page. For more information on obtaining these tokens, see the [Sandboxes documentation](https://developer.anduril.com/guides/getting-started/sandboxes#get-the-tokens)
+    * `<sandbox_endpoint>` - Your Lattice environment endpoint without an `https://` protocol prefix.
+    * Either `<environment_token>`, or `<sandbox_client_id>` and `<sandbox_client_secret>` - Your Lattice environment token, or client ID and secret.
+    *  `<sandboxes_token>` If you are using Lattice Sandboxes, get this from [Account & Security](https://sandboxes.developer.anduril.com/user-settings) page. For more information on obtaining these tokens, see the [Sandboxes documentation](https://developer.anduril.com/guides/developer-tools/sandboxes#set-up-credentials)
 
 * You can change the location of your simulated asset and track from the `var/config.yml` file. The **default distance threshold for the auto reconnaissance system is 5 miles**. Ensure that the latitude and longitude inputs for your asset and track are within this distance.
 
